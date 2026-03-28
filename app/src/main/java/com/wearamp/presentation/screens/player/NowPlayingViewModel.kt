@@ -27,7 +27,8 @@ data class PlayerUiState(
     val currentPositionMs: Long = 0L,
     val durationMs: Long = 0L,
     val isStarred: Boolean = false,
-    val thumbUrl: String? = null
+    val thumbUrl: String? = null,
+    val connectionError: String? = null
 )
 
 @HiltViewModel
@@ -53,9 +54,15 @@ class NowPlayingViewModel @Inject constructor(
         controllerFuture = MediaController.Builder(context, sessionToken).buildAsync()
         controllerFuture?.addListener(
             {
-                mediaController = controllerFuture?.get()
-                mediaController?.addListener(playerListener)
-                updateState()
+                try {
+                    mediaController = controllerFuture?.get()
+                    mediaController?.addListener(playerListener)
+                    updateState()
+                } catch (e: Exception) {
+                    _uiState.value = _uiState.value.copy(
+                        connectionError = e.message ?: "Failed to connect to media service"
+                    )
+                }
             },
             MoreExecutors.directExecutor()
         )

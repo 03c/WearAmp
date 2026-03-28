@@ -31,7 +31,6 @@ import androidx.compose.material.icons.filled.SkipPrevious
 
 @Composable
 fun NowPlayingScreen(
-    onBack: () -> Unit,
     viewModel: NowPlayingViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()

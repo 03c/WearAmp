@@ -17,7 +17,6 @@ import androidx.wear.compose.material.Text
 
 @Composable
 fun BrowseArtistsScreen(
-    sectionId: String,
     onArtistSelected: (artistId: String) -> Unit,
     onNowPlayingClick: () -> Unit,
     viewModel: BrowseArtistsViewModel = hiltViewModel()
@@ -35,7 +34,6 @@ fun BrowseArtistsScreen(
 
 @Composable
 fun BrowseAlbumsScreen(
-    artistId: String,
     onAlbumSelected: (albumId: String) -> Unit,
     onNowPlayingClick: () -> Unit,
     viewModel: BrowseAlbumsViewModel = hiltViewModel()
@@ -53,7 +51,6 @@ fun BrowseAlbumsScreen(
 
 @Composable
 fun BrowseTracksScreen(
-    albumId: String,
     onNowPlayingClick: () -> Unit,
     viewModel: BrowseTracksViewModel = hiltViewModel()
 ) {
