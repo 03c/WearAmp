@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -5,6 +7,18 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.hilt.android)
     kotlin("kapt")
+}
+
+// ---------------------------------------------------------------------------
+// Version management
+// In CI the VERSION_CODE env var is set to the GitHub Actions run number,
+// which auto-increments on every merge to main. The human-readable
+// VERSION_NAME is read from version.properties (bump it manually for each
+// meaningful release).
+// ---------------------------------------------------------------------------
+val versionProps = Properties().apply {
+    rootProject.file("version.properties").takeIf { it.exists() }
+        ?.inputStream()?.use { load(it) }
 }
 
 android {
@@ -15,8 +29,30 @@ android {
         applicationId = "com.wearamp"
         minSdk = 30
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = (System.getenv("VERSION_CODE") ?: "1").toInt()
+        versionName = versionProps.getProperty("VERSION_NAME", "1.0.0")
+    }
+
+    // ---------------------------------------------------------------------------
+    // Signing
+    // Provide these four environment variables in CI (see .github/workflows/deploy.yml):
+    //   KEYSTORE_PATH          – absolute path to the decoded .jks file
+    //   KEY_STORE_PASSWORD     – keystore password
+    //   KEY_ALIAS              – key alias inside the keystore
+    //   KEY_PASSWORD           – key password
+    // For local development no signing env vars are needed; the release build
+    // type falls back to the debug signing config automatically.
+    // ---------------------------------------------------------------------------
+    val keystorePath = System.getenv("KEYSTORE_PATH")
+    if (!keystorePath.isNullOrEmpty()) {
+        signingConfigs {
+            create("release") {
+                storeFile = file(keystorePath)
+                storePassword = System.getenv("KEY_STORE_PASSWORD")
+                keyAlias = System.getenv("KEY_ALIAS")
+                keyPassword = System.getenv("KEY_PASSWORD")
+            }
+        }
     }
 
     buildTypes {
@@ -26,6 +62,11 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = if (!System.getenv("KEYSTORE_PATH").isNullOrEmpty()) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
     }
 
