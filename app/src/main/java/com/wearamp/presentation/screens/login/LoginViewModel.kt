@@ -52,8 +52,16 @@ class LoginViewModel @Inject constructor(
             _uiState.value = LoginUiState.WaitingForAuth
             authRepository.pollForAuthToken(pinId, clientId).fold(
                 onSuccess = { token ->
-                    authRepository.fetchAndSaveUser(token)
-                    _uiState.value = LoginUiState.Success
+                    authRepository.fetchAndSaveUser(token).fold(
+                        onSuccess = {
+                            _uiState.value = LoginUiState.Success
+                        },
+                        onFailure = { error ->
+                            _uiState.value = LoginUiState.Error(
+                                error.message ?: "Failed to fetch user information"
+                            )
+                        }
+                    )
                 },
                 onFailure = { error ->
                     _uiState.value = LoginUiState.Error(

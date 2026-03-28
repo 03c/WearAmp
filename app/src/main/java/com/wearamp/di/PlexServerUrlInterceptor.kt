@@ -1,11 +1,15 @@
 package com.wearamp.di
 
 import com.wearamp.data.local.UserPreferences
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.Interceptor
 import okhttp3.Response
+import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -13,17 +17,33 @@ import javax.inject.Singleton
  * OkHttp interceptor that rewrites the request's host, port, and scheme with the user's
  * configured Plex server URL stored in [UserPreferences].
  *
- * This avoids the need to re-create the Retrofit instance whenever the server URL changes
- * and prevents blocking the Hilt dependency graph at startup.
+ * The server URL is cached in an [AtomicReference] and kept up-to-date by collecting
+ * the DataStore flow on a background coroutine, so each request reads the cached value
+ * without blocking the network thread.
+ *
+ * The [scope] is intentionally unbound: as a [Singleton], this interceptor lives for
+ * the entire process lifetime (tied to [SingletonComponent]), so the coroutine collecting
+ * DataStore updates is valid for the same lifetime as the application process.
  */
 @Singleton
 class PlexServerUrlInterceptor @Inject constructor(
-    private val userPreferences: UserPreferences
+    userPreferences: UserPreferences
 ) : Interceptor {
 
+    private val cachedServerUrl = AtomicReference<HttpUrl?>(null)
+
+    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+
+    init {
+        scope.launch {
+            userPreferences.serverUrl.collect { urlString ->
+                cachedServerUrl.set(urlString?.toHttpUrlOrNull())
+            }
+        }
+    }
+
     override fun intercept(chain: Interceptor.Chain): Response {
-        val serverUrl = runBlocking { userPreferences.serverUrl.firstOrNull() }
-            ?.toHttpUrlOrNull()
+        val serverUrl = cachedServerUrl.get()
             ?: return chain.proceed(chain.request())
 
         val original = chain.request()

@@ -49,10 +49,8 @@ fun WearNavGraph(
             )
         }
 
-        composable(Screen.BROWSE_ARTISTS) { backStackEntry ->
-            val sectionId = backStackEntry.arguments?.getString("sectionId") ?: return@composable
+        composable(Screen.BROWSE_ARTISTS) { _ ->
             BrowseArtistsScreen(
-                sectionId = sectionId,
                 onArtistSelected = { artistId ->
                     navController.navigate(Screen.browseAlbums(artistId))
                 },
@@ -60,10 +58,8 @@ fun WearNavGraph(
             )
         }
 
-        composable(Screen.BROWSE_ALBUMS) { backStackEntry ->
-            val artistId = backStackEntry.arguments?.getString("artistId") ?: return@composable
+        composable(Screen.BROWSE_ALBUMS) { _ ->
             BrowseAlbumsScreen(
-                artistId = artistId,
                 onAlbumSelected = { albumId ->
                     navController.navigate(Screen.browseTracks(albumId))
                 },
@@ -71,18 +67,14 @@ fun WearNavGraph(
             )
         }
 
-        composable(Screen.BROWSE_TRACKS) { backStackEntry ->
-            val albumId = backStackEntry.arguments?.getString("albumId") ?: return@composable
+        composable(Screen.BROWSE_TRACKS) { _ ->
             BrowseTracksScreen(
-                albumId = albumId,
                 onNowPlayingClick = { navController.navigate(Screen.NOW_PLAYING) }
             )
         }
 
         composable(Screen.NOW_PLAYING) {
-            NowPlayingScreen(
-                onBack = { navController.popBackStack() }
-            )
+            NowPlayingScreen()
         }
 
         composable(Screen.SETTINGS) {
