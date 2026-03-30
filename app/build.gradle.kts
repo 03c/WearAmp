@@ -29,7 +29,7 @@ android {
         applicationId = "com.wearamp"
         minSdk = 30
         targetSdk = 35
-        versionCode = (System.getenv("VERSION_CODE") ?: "1").toInt()
+        versionCode = System.getenv("VERSION_CODE")?.toIntOrNull() ?: 1
         versionName = versionProps.getProperty("VERSION_NAME", "1.0.0")
     }
 
@@ -45,12 +45,18 @@ android {
     // ---------------------------------------------------------------------------
     val keystorePath = System.getenv("KEYSTORE_PATH")
     if (!keystorePath.isNullOrEmpty()) {
+        val storePass = System.getenv("KEY_STORE_PASSWORD")
+            ?: error("KEY_STORE_PASSWORD env var is required when KEYSTORE_PATH is set")
+        val keyAliasVal = System.getenv("KEY_ALIAS")
+            ?: error("KEY_ALIAS env var is required when KEYSTORE_PATH is set")
+        val keyPass = System.getenv("KEY_PASSWORD")
+            ?: error("KEY_PASSWORD env var is required when KEYSTORE_PATH is set")
         signingConfigs {
             create("release") {
                 storeFile = file(keystorePath)
-                storePassword = System.getenv("KEY_STORE_PASSWORD")
-                keyAlias = System.getenv("KEY_ALIAS")
-                keyPassword = System.getenv("KEY_PASSWORD")
+                storePassword = storePass
+                keyAlias = keyAliasVal
+                keyPassword = keyPass
             }
         }
     }
