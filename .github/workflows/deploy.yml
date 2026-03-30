@@ -26,6 +26,9 @@ jobs:
         run: chmod +x ./gradlew
 
       # Decode the base64-encoded keystore secret into a file that Gradle can use.
+      # To generate KEYSTORE_BASE64, run: base64 -w 0 release.jks
+      # (On macOS: base64 -i release.jks | tr -d '\n')
+      # Then add the output as a GitHub Actions secret named KEYSTORE_BASE64.
       - name: Decode keystore
         run: |
           printf '%s' "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > "${{ github.workspace }}/app/release.jks"
@@ -33,13 +36,17 @@ jobs:
       # VERSION_CODE combines the run number and run attempt so that both new
       # merges and workflow re-runs always produce a strictly higher code than
       # any previous upload (Play Console rejects duplicate or lower codes).
+      # Note: arithmetic is evaluated in bash because GitHub Actions expressions
+      # do not support operators like * or + inside ${{ }}.
+      - name: Compute version code
+        run: echo "VERSION_CODE=$(( ${{ github.run_number }} * 10 + ${{ github.run_attempt }} ))" >> "$GITHUB_ENV"
+
       - name: Build Release AAB
         env:
           KEYSTORE_PATH: ${{ github.workspace }}/app/release.jks
           KEY_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-          VERSION_CODE: ${{ github.run_number * 10 + github.run_attempt }}
         run: ./gradlew :app:bundleRelease --no-daemon
 
       - name: Upload AAB to Google Play (Internal Track)
