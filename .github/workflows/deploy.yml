@@ -36,10 +36,12 @@ jobs:
       # VERSION_CODE combines the run number and run attempt so that both new
       # merges and workflow re-runs always produce a strictly higher code than
       # any previous upload (Play Console rejects duplicate or lower codes).
+      # We multiply run_number by 1000 so that even if a workflow is re-run
+      # hundreds of times, run_attempt values will not collide with adjacent runs.
       # Note: arithmetic is evaluated in bash because GitHub Actions expressions
       # do not support operators like * or + inside ${{ }}.
       - name: Compute version code
-        run: echo "VERSION_CODE=$(( ${{ github.run_number }} * 10 + ${{ github.run_attempt }} ))" >> "$GITHUB_ENV"
+        run: echo "VERSION_CODE=$(( ${{ github.run_number }} * 1000 + ${{ github.run_attempt }} ))" >> "$GITHUB_ENV"
 
       - name: Build Release AAB
         env:
