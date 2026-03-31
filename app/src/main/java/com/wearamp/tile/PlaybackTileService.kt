@@ -88,11 +88,15 @@ class PlaybackTileService : TileService() {
 
         val future = SettableFuture.create<TileBuilders.Tile>()
         serviceScope.launch {
-            val controller = awaitController()
-            handleAction(clickId, controller)
-            // Give the player a moment to reflect the new state after an action.
-            if (clickId.isNotEmpty()) delay(ACTION_STATE_PROPAGATION_DELAY_MS)
-            future.set(buildTile(this@PlaybackTileService, deviceParams, controller))
+            try {
+                val controller = awaitController()
+                handleAction(clickId, controller)
+                // Give the player a moment to reflect the new state after an action.
+                if (clickId.isNotEmpty()) delay(ACTION_STATE_PROPAGATION_DELAY_MS)
+                future.set(buildTile(this@PlaybackTileService, deviceParams, controller))
+            } catch (e: Exception) {
+                future.setException(e)
+            }
         }
         return future
     }
@@ -118,6 +122,9 @@ class PlaybackTileService : TileService() {
                 try {
                     val mc = future.get()
                     mediaController = mc
+                    // Clear the in-flight future so a reconnect is possible if the
+                    // controller later becomes disconnected.
+                    controllerFuture = null
                     mc.addListener(object : Player.Listener {
                         override fun onIsPlayingChanged(isPlaying: Boolean) =
                             requestTileUpdate()
