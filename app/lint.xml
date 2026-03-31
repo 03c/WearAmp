@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <!--
+        Project-wide opt-in for Media3 UnstableApi so that:
+          a) @OptIn(UnstableApi::class) call-sites are not flagged by the
+             UnsafeOptInUsageError rule (UnstableApi is self-annotated, which
+             creates a recursive opt-in requirement without this config), and
+          b) individual usages of @UnstableApi-marked APIs are allowed without
+             per-usage @OptIn annotations.
+        See: https://developer.android.com/studio/write/lint#snapshot
+    -->
+    <issue id="UnsafeOptInUsageError">
+        <option name="opt-in" value="androidx.media3.common.util.UnstableApi" />
+    </issue>
+</lint>
