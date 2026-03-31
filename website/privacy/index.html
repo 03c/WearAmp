@@ -48,19 +48,39 @@
       <li>
         <strong>Plex Authentication Token</strong> — After you sign in via
         <a href="https://plex.tv/link" target="_blank" rel="noopener">plex.tv/link</a>, Plex returns a
-        user-scoped authentication token. WearAmp stores this token locally on your watch using
-        Android's DataStore (encrypted storage). The token is used exclusively to authenticate
-        requests to your Plex Media Server.
+        user-scoped authentication token (which may include both a user token and a server-scoped
+        token). WearAmp stores these tokens locally on your watch using Android's DataStore
+        (encrypted storage). They are used exclusively to authenticate requests from the app to
+        your Plex Media Server.
       </li>
       <li>
         <strong>Plex Server URL</strong> — You manually enter the URL of your Plex Media Server
         (e.g. <code>http://192.168.1.100:32400</code>). This URL is stored locally on your watch
         using DataStore and is used only to direct API requests to your server.
       </li>
+      <li>
+        <strong>Plex Client Identifier</strong> — WearAmp stores a client ID assigned to your watch
+        locally using DataStore. This identifier is required by Plex to recognize the WearAmp app
+        instance when making API requests. It is not used for tracking outside your own Plex
+        ecosystem.
+      </li>
+      <li>
+        <strong>Plex Username</strong> — WearAmp may cache your Plex account display name locally
+        on your watch using DataStore. This is used only to show your account name in the app
+        interface (for example, to confirm which account is currently linked).
+      </li>
+      <li>
+        <strong>Plex User Thumbnail / Avatar</strong> — WearAmp may cache a small avatar or profile
+        thumbnail associated with your Plex account locally using DataStore. This is used only to
+        visually represent your account inside the app UI.
+      </li>
     </ul>
     <p>
-      WearAmp does <strong>not</strong> collect, transmit, or share any personal information with
-      the WearAmp developers or any third-party analytics or advertising services.
+      All of the information listed above is stored only on your device (your watch) and is kept
+      for as long as you keep WearAmp installed and linked to your Plex account. You can remove
+      this data at any time by unlinking your Plex account, clearing WearAmp's app data, or
+      uninstalling the app. WearAmp does <strong>not</strong> collect, transmit, or share any of this
+      information with the WearAmp developers or any third-party analytics or advertising services.
     </p>
 
     <h2>2. How Information Is Used</h2>
