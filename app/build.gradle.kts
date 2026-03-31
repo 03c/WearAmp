@@ -149,6 +149,9 @@ dependencies {
     implementation(libs.material.icons.core)
     implementation(libs.material.icons.extended)
 
+    // QR Code generation
+    implementation(libs.zxing.core)
+
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.ext.junit)

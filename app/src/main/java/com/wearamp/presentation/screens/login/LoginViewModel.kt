@@ -14,7 +14,7 @@ import javax.inject.Inject
 sealed interface LoginUiState {
     data object Idle : LoginUiState
     data object GeneratingPin : LoginUiState
-    data class WaitingForAuth(val pin: String) : LoginUiState
+    data class WaitingForAuth(val pin: String, val linkUrl: String) : LoginUiState
     data object Success : LoginUiState
     data class Error(val message: String) : LoginUiState
 }
@@ -29,12 +29,17 @@ class LoginViewModel @Inject constructor(
 
     private val clientId: String = UUID.randomUUID().toString()
 
+    init {
+        startLogin()
+    }
+
     fun startLogin() {
         viewModelScope.launch {
             _uiState.value = LoginUiState.GeneratingPin
             authRepository.createPin(clientId).fold(
                 onSuccess = { pin ->
-                    _uiState.value = LoginUiState.WaitingForAuth(pin.code)
+                    val linkUrl = "https://plex.tv/link?pin=${pin.code}"
+                    _uiState.value = LoginUiState.WaitingForAuth(pin.code, linkUrl)
                     waitForAuth(pin.id)
                 },
                 onFailure = { error ->
@@ -50,9 +55,23 @@ class LoginViewModel @Inject constructor(
         viewModelScope.launch {
             authRepository.pollForAuthToken(pinId, clientId).fold(
                 onSuccess = { token ->
-                    authRepository.fetchAndSaveUser(token).fold(
+                    // Fetch user info
+                    authRepository.fetchAndSaveUser(token, clientId).fold(
                         onSuccess = {
-                            _uiState.value = LoginUiState.Success
+                            // Auto-discover the user's Plex server
+                            authRepository.discoverAndSaveServer(token, clientId).fold(
+                                onSuccess = {
+                                    // Everything ready — now persist the auth token.
+                                    // This triggers NavGraph to redirect to Library.
+                                    authRepository.finaliseLogin(token, clientId)
+                                    _uiState.value = LoginUiState.Success
+                                },
+                                onFailure = { error ->
+                                    _uiState.value = LoginUiState.Error(
+                                        error.message ?: "Could not find a Plex server"
+                                    )
+                                }
+                            )
                         },
                         onFailure = { error ->
                             _uiState.value = LoginUiState.Error(
@@ -71,6 +90,6 @@ class LoginViewModel @Inject constructor(
     }
 
     fun retry() {
-        _uiState.value = LoginUiState.Idle
+        startLogin()
     }
 }

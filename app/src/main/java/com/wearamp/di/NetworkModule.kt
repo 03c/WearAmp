@@ -19,7 +19,9 @@ import javax.inject.Singleton
 object NetworkModule {
 
     const val PLEX_AUTH_BASE_URL = "https://plex.tv/api/v2/"
-    const val PLEX_MEDIA_PLACEHOLDER_URL = "http://localhost:32400/"
+    // Placeholder that will always be rewritten by PlexServerUrlInterceptor.
+    // Must be a valid URL for Retrofit but is never actually called.
+    const val PLEX_MEDIA_PLACEHOLDER_URL = "https://plex.invalid/"
 
     @Provides
     @Singleton
@@ -53,6 +55,12 @@ object NetworkModule {
         return OkHttpClient.Builder()
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
+            .addInterceptor { chain ->
+                val request = chain.request().newBuilder()
+                    .addHeader("Accept", "application/json")
+                    .build()
+                chain.proceed(request)
+            }
             .addInterceptor(serverUrlInterceptor)
             .addInterceptor(logging)
             .build()

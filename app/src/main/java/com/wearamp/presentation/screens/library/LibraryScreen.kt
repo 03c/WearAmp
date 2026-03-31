@@ -61,9 +61,13 @@ fun LibraryScreen(
         is LibraryUiState.Error -> {
             ScalingLazyColumn(modifier = Modifier.fillMaxSize()) {
                 item {
+                    ListHeader { Text(text = "Error") }
+                }
+                item {
                     Text(
                         text = state.message,
-                        color = MaterialTheme.colors.error
+                        color = MaterialTheme.colors.error,
+                        style = MaterialTheme.typography.body2
                     )
                 }
                 item {

@@ -44,7 +44,9 @@ class PlexServerUrlInterceptor @Inject constructor(
 
     override fun intercept(chain: Interceptor.Chain): Response {
         val serverUrl = cachedServerUrl.get()
-            ?: return chain.proceed(chain.request())
+            ?: throw java.io.IOException(
+                "No Plex server configured. Please set your server URL in Settings."
+            )
 
         val original = chain.request()
         val rewritten = original.url.newBuilder()
