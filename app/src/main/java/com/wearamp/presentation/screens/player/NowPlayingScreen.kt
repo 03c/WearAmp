@@ -27,6 +27,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.automirrored.filled.QueueMusic
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.ui.geometry.CornerRadius
@@ -35,6 +36,7 @@ import com.wearamp.presentation.components.EqualizerAnimation
 
 @Composable
 fun NowPlayingScreen(
+    onQueueClick: () -> Unit = {},
     viewModel: NowPlayingViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -184,6 +186,20 @@ fun NowPlayingScreen(
                     contentDescription = "Next"
                 )
             }
+        }
+
+        Spacer(modifier = Modifier.height(6.dp))
+
+        // Queue button
+        Button(
+            onClick = onQueueClick,
+            modifier = Modifier.size(ButtonDefaults.SmallButtonSize),
+            colors = ButtonDefaults.secondaryButtonColors()
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.QueueMusic,
+                contentDescription = "Queue"
+            )
         }
     }
 }

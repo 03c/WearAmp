@@ -14,6 +14,7 @@ import com.wearamp.presentation.screens.browse.BrowseTracksScreen
 import com.wearamp.presentation.screens.library.LibraryScreen
 import com.wearamp.presentation.screens.login.LoginScreen
 import com.wearamp.presentation.screens.player.NowPlayingScreen
+import com.wearamp.presentation.screens.queue.QueueScreen
 import com.wearamp.presentation.screens.settings.SettingsScreen
 
 @Composable
@@ -96,7 +97,13 @@ fun WearNavGraph(
         }
 
         composable(Screen.NOW_PLAYING) {
-            NowPlayingScreen()
+            NowPlayingScreen(
+                onQueueClick = { navController.navigate(Screen.QUEUE) }
+            )
+        }
+
+        composable(Screen.QUEUE) {
+            QueueScreen()
         }
 
         composable(Screen.SETTINGS) {
