@@ -66,16 +66,20 @@ class AuthRepository @Inject constructor(
             ?: resources.firstOrNull { it.provides.contains("server") }
             ?: throw Exception("No Plex servers found on this account")
 
+        val isHttps = { connection: PlexConnection ->
+            connection.uri.toHttpUrlOrNull()?.scheme.equals("https", ignoreCase = true)
+        }
+
         val connection = server.connections
             ?.sortedWith(
                 compareByDescending { it.local }
-                    .thenByDescending { it.uri.startsWith("https://", ignoreCase = true) }
+                    .thenByDescending { isHttps(it) }
             )
             ?.firstOrNull()
             ?: throw Exception("No connections available for server '${server.name}'")
 
-        val rawUri = connection.uri.trim()
-        val parsedUri = rawUri.toHttpUrlOrNull()
+        val trimmedUri = connection.uri.trim()
+        val parsedUri = trimmedUri.toHttpUrlOrNull()
             ?: throw Exception("Invalid server URI format")
 
         val path = parsedUri.encodedPath
