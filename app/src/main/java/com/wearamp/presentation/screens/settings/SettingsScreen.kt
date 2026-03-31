@@ -95,12 +95,12 @@ fun SettingsScreen(
             Chip(
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text(text = "Server") },
-                secondaryLabel = { Text(text = serverUrl ?: "Tap to configure") },
+                secondaryLabel = { Text(text = serverUrl ?: "Not configured") },
                 onClick = {
                     serverUrlInput = serverUrl ?: ""
                     showServerUrlDialog = true
                 },
-                colors = ChipDefaults.primaryChipColors()
+                colors = ChipDefaults.secondaryChipColors()
             )
         }
 

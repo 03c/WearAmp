@@ -52,13 +52,14 @@ class LoginViewModel @Inject constructor(
             _uiState.value = LoginUiState.WaitingForAuth
             authRepository.pollForAuthToken(pinId, clientId).fold(
                 onSuccess = { token ->
-                    authRepository.fetchAndSaveUser(token).fold(
+                    authRepository.fetchAndSaveUser(token)
+                    authRepository.fetchAndSaveServerUrl(token).fold(
                         onSuccess = {
                             _uiState.value = LoginUiState.Success
                         },
                         onFailure = { error ->
                             _uiState.value = LoginUiState.Error(
-                                error.message ?: "Failed to fetch user information"
+                                error.message ?: "Failed to discover Plex server"
                             )
                         }
                     )
