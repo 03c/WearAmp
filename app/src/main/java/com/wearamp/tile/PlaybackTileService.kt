@@ -83,8 +83,18 @@ class PlaybackTileService : TileService() {
     override fun onTileRequest(
         requestParams: RequestBuilders.TileRequest
     ): ListenableFuture<TileBuilders.Tile> {
-        val deviceParams = requestParams.deviceParameters
+        val tileDeviceParams = requestParams.deviceParameters
         val clickId = requestParams.currentState.lastClickableId
+
+        // Convert from the tiles DeviceParameters type to the protolayout type.
+        val deviceParams = tileDeviceParams?.let {
+            DeviceParametersBuilders.DeviceParameters.Builder()
+                .setScreenWidthDp(it.screenWidthDp)
+                .setScreenHeightDp(it.screenHeightDp)
+                .setScreenDensity(it.screenDensity)
+                .setScreenShape(it.screenShape)
+                .build()
+        } ?: DeviceParametersBuilders.DeviceParameters.Builder().build()
 
         val future = SettableFuture.create<TileBuilders.Tile>()
         serviceScope.launch {
@@ -103,9 +113,9 @@ class PlaybackTileService : TileService() {
 
     override fun onResourcesRequest(
         requestParams: RequestBuilders.ResourcesRequest
-    ): ListenableFuture<ResourceBuilders.Resources> =
+    ): ListenableFuture<androidx.wear.tiles.ResourceBuilders.Resources> =
         Futures.immediateFuture(
-            ResourceBuilders.Resources.Builder()
+            androidx.wear.tiles.ResourceBuilders.Resources.Builder()
                 .setVersion(RESOURCES_VERSION)
                 .build()
         )
