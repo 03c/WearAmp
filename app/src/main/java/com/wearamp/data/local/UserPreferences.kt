@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -26,6 +28,9 @@ class UserPreferences @Inject constructor(
         private val KEY_CLIENT_ID = stringPreferencesKey("client_id")
         private val KEY_USERNAME = stringPreferencesKey("username")
         private val KEY_USER_THUMB = stringPreferencesKey("user_thumb")
+        private val KEY_SHUFFLE_MODE = booleanPreferencesKey("shuffle_mode")
+        /** Stored as an Int matching Player.REPEAT_MODE_* constants (0=off, 1=one, 2=all). */
+        private val KEY_REPEAT_MODE = intPreferencesKey("repeat_mode")
     }
 
     val authToken: Flow<String?> = context.dataStore.data.map { it[KEY_AUTH_TOKEN] }
@@ -34,6 +39,9 @@ class UserPreferences @Inject constructor(
     val serverToken: Flow<String?> = context.dataStore.data.map { it[KEY_SERVER_TOKEN] }
     val clientId: Flow<String?> = context.dataStore.data.map { it[KEY_CLIENT_ID] }
     val username: Flow<String?> = context.dataStore.data.map { it[KEY_USERNAME] }
+    val shuffleModeEnabled: Flow<Boolean> = context.dataStore.data.map { it[KEY_SHUFFLE_MODE] ?: false }
+    /** Persisted repeat mode; defaults to 2 (Player.REPEAT_MODE_ALL) to match original behaviour. */
+    val repeatMode: Flow<Int> = context.dataStore.data.map { it[KEY_REPEAT_MODE] ?: 2 }
 
     suspend fun saveAuthToken(token: String) {
         context.dataStore.edit { it[KEY_AUTH_TOKEN] = token }
@@ -56,6 +64,14 @@ class UserPreferences @Inject constructor(
             it[KEY_USERNAME] = username
             if (thumb != null) it[KEY_USER_THUMB] = thumb
         }
+    }
+
+    suspend fun saveShuffleMode(enabled: Boolean) {
+        context.dataStore.edit { it[KEY_SHUFFLE_MODE] = enabled }
+    }
+
+    suspend fun saveRepeatMode(mode: Int) {
+        context.dataStore.edit { it[KEY_REPEAT_MODE] = mode }
     }
 
     suspend fun clearAll() {
