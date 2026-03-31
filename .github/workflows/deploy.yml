@@ -29,6 +29,14 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
+      - name: Debug keystore secret
+        run: |
+          VAL="${{ secrets.KEYSTORE_BASE64 }}"
+          echo "Length: ${#VAL}"
+          echo "First 10: ${VAL:0:10}"
+          echo "Last 10: ${VAL: -10}"
+          echo "Has newlines: $(echo "$VAL" | wc -l)"
+
       - name: Decode keystore
         run: printf '%s' "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > "${{ github.workspace }}/app/release.jks"
 
