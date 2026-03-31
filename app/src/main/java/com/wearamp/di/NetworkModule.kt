@@ -18,6 +18,25 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
+    /**
+     * A plain OkHttpClient for ExoPlayer streaming.
+     * No server-URL rewriting or Accept-JSON header – just timeouts,
+     * cleartext support, and basic logging.
+     */
+    @Provides
+    @Singleton
+    @Named("exoplayer")
+    fun provideExoPlayerOkHttpClient(): OkHttpClient {
+        val logging = HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.BASIC
+        }
+        return OkHttpClient.Builder()
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(60, TimeUnit.SECONDS)
+            .addInterceptor(logging)
+            .build()
+    }
+
     const val PLEX_AUTH_BASE_URL = "https://plex.tv/api/v2/"
     // Placeholder that will always be rewritten by PlexServerUrlInterceptor.
     // Must be a valid URL for Retrofit but is never actually called.

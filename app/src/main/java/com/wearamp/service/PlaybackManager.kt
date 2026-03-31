@@ -2,6 +2,7 @@ package com.wearamp.service
 
 import android.content.ComponentName
 import android.content.Context
+import android.util.Log
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
@@ -19,6 +20,8 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
+
+private const val TAG = "PlaybackManager"
 
 /**
  * Shared singleton for queueing tracks and controlling playback.
@@ -64,16 +67,24 @@ class PlaybackManager @Inject constructor(
      */
     suspend fun playTracks(tracks: List<PlexMetadata>) {
         val mc = getController()
-        val authToken = userPreferences.authToken.firstOrNull()
+        // Prefer server-specific token, fall back to plex.tv auth token
+        val token = userPreferences.serverToken.firstOrNull()
+            ?: userPreferences.authToken.firstOrNull()
             ?: throw IllegalStateException("Not signed in")
-        val serverUrl = userPreferences.serverUrl.firstOrNull()
-            ?: throw IllegalStateException("No Plex server configured")
+        val serverUrl = (userPreferences.serverUrl.firstOrNull()
+            ?: throw IllegalStateException("No Plex server configured"))
+            .trimEnd('/')  // avoid double-slash
 
         val mediaItems = tracks.mapNotNull { track ->
             val partKey = track.media?.firstOrNull()?.parts?.firstOrNull()?.key
                 ?: return@mapNotNull null
+            // partKey starts with '/' e.g. /library/parts/12345/file.mp3
+            val uri = android.net.Uri.parse("$serverUrl$partKey")
+                .buildUpon()
+                .appendQueryParameter("X-Plex-Token", token)
+                .build()
             MediaItem.Builder()
-                .setUri("$serverUrl$partKey?X-Plex-Token=$authToken")
+                .setUri(uri)
                 .setMediaMetadata(
                     MediaMetadata.Builder()
                         .setTitle(track.title)
@@ -85,6 +96,9 @@ class PlaybackManager @Inject constructor(
         }
 
         if (mediaItems.isEmpty()) throw IllegalStateException("No playable tracks found")
+
+        Log.d(TAG, "Queueing ${mediaItems.size} tracks, first: ${mediaItems.first().mediaMetadata.title}")
+        Log.d(TAG, "First URL: ${mediaItems.first().localConfiguration?.uri}")
 
         mc.setMediaItems(mediaItems)
         mc.repeatMode = Player.REPEAT_MODE_ALL

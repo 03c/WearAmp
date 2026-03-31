@@ -1,19 +1,20 @@
 package com.wearamp.presentation.screens.player
 
 import android.content.ComponentName
+import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
+import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
+import com.google.common.util.concurrent.ListenableFuture
+import com.google.common.util.concurrent.MoreExecutors
 import com.wearamp.service.WearAmpMediaService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import android.content.Context
-import androidx.media3.common.MediaItem
-import androidx.media3.common.Player
-import com.google.common.util.concurrent.ListenableFuture
-import com.google.common.util.concurrent.MoreExecutors
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,6 +23,8 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+private const val TAG = "NowPlayingVM"
+
 data class PlayerUiState(
     val isPlaying: Boolean = false,
     val trackTitle: String = "Nothing playing",
@@ -29,9 +32,7 @@ data class PlayerUiState(
     val albumTitle: String = "",
     val currentPositionMs: Long = 0L,
     val durationMs: Long = 0L,
-    val isStarred: Boolean = false,
-    val thumbUrl: String? = null,
-    val connectionError: String? = null
+    val playbackError: String? = null
 )
 
 @HiltViewModel
@@ -44,7 +45,6 @@ class NowPlayingViewModel @Inject constructor(
 
     private var controllerFuture: ListenableFuture<MediaController>? = null
     private var mediaController: MediaController? = null
-    private var positionJob: Job? = null
 
     init {
         connectToMediaService()
@@ -62,10 +62,12 @@ class NowPlayingViewModel @Inject constructor(
                     mediaController = controllerFuture?.get()
                     mediaController?.addListener(playerListener)
                     updateState()
-                    startPositionUpdates()
+                    // Continuously poll position regardless of play state
+                    startPositionTicker()
                 } catch (e: Exception) {
+                    Log.e(TAG, "Failed to connect to media service", e)
                     _uiState.value = _uiState.value.copy(
-                        connectionError = e.message ?: "Failed to connect to media service"
+                        playbackError = "Cannot connect to media service"
                     )
                 }
             },
@@ -74,23 +76,41 @@ class NowPlayingViewModel @Inject constructor(
     }
 
     private val playerListener = object : Player.Listener {
-        override fun onIsPlayingChanged(isPlaying: Boolean) {
+        override fun onIsPlayingChanged(isPlaying: Boolean) = updateState()
+        override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+            // Clear any previous error when a new track starts
+            _uiState.value = _uiState.value.copy(playbackError = null)
             updateState()
-            if (isPlaying) startPositionUpdates() else stopPositionUpdates()
         }
-        override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) = updateState()
-        override fun onPlaybackStateChanged(playbackState: Int) = updateState()
+        override fun onPlaybackStateChanged(playbackState: Int) {
+            updateState()
+            if (playbackState == Player.STATE_IDLE) {
+                Log.w(TAG, "Player returned to IDLE")
+            }
+        }
+        override fun onPlayerError(error: PlaybackException) {
+            Log.e(TAG, "Playback error: ${error.errorCodeName} – ${error.message}", error)
+            _uiState.value = _uiState.value.copy(
+                playbackError = "Playback error: ${error.errorCodeName}\n${error.message}"
+            )
+        }
     }
 
-    private fun startPositionUpdates() {
-        if (positionJob?.isActive == true) return
-        positionJob = viewModelScope.launch {
+    /**
+     * Polls [MediaController.getCurrentPosition] every 500 ms so the
+     * progress bar and time labels stay in sync.  Runs for the entire
+     * lifetime of the ViewModel – no stop/restart dance needed.
+     */
+    private fun startPositionTicker() {
+        viewModelScope.launch {
             while (isActive) {
                 val controller = mediaController
                 if (controller != null) {
+                    val pos = controller.currentPosition.coerceAtLeast(0L)
+                    val dur = controller.duration.coerceAtLeast(0L)
                     _uiState.value = _uiState.value.copy(
-                        currentPositionMs = controller.currentPosition.coerceAtLeast(0L),
-                        durationMs = controller.duration.coerceAtLeast(0L)
+                        currentPositionMs = pos,
+                        durationMs = dur
                     )
                 }
                 delay(500L)
@@ -98,27 +118,16 @@ class NowPlayingViewModel @Inject constructor(
         }
     }
 
-    private fun stopPositionUpdates() {
-        positionJob?.cancel()
-        positionJob = null
-        // One final position snapshot
-        val controller = mediaController ?: return
-        _uiState.value = _uiState.value.copy(
-            currentPositionMs = controller.currentPosition.coerceAtLeast(0L)
-        )
-    }
-
     private fun updateState() {
         val controller = mediaController ?: return
         val mediaItem = controller.currentMediaItem
-        _uiState.value = PlayerUiState(
+        _uiState.value = _uiState.value.copy(
             isPlaying = controller.isPlaying,
             trackTitle = mediaItem?.mediaMetadata?.title?.toString() ?: "Nothing playing",
             artistName = mediaItem?.mediaMetadata?.artist?.toString() ?: "",
             albumTitle = mediaItem?.mediaMetadata?.albumTitle?.toString() ?: "",
             currentPositionMs = controller.currentPosition.coerceAtLeast(0L),
-            durationMs = controller.duration.coerceAtLeast(0L),
-            thumbUrl = mediaItem?.mediaMetadata?.artworkUri?.toString()
+            durationMs = controller.duration.coerceAtLeast(0L)
         )
     }
 
@@ -141,7 +150,6 @@ class NowPlayingViewModel @Inject constructor(
     }
 
     override fun onCleared() {
-        positionJob?.cancel()
         mediaController?.removeListener(playerListener)
         controllerFuture?.let { MediaController.releaseFuture(it) }
         super.onCleared()

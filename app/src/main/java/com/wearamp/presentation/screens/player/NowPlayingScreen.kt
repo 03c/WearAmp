@@ -30,7 +30,6 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import com.wearamp.presentation.components.EqualizerAnimation
 
@@ -133,6 +132,20 @@ fun NowPlayingScreen(
         }
 
         Spacer(modifier = Modifier.height(6.dp))
+
+        // Playback error
+        val error = state.playbackError
+        if (error != null) {
+            Text(
+                text = error,
+                style = MaterialTheme.typography.caption3,
+                color = MaterialTheme.colors.error,
+                textAlign = TextAlign.Center,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+        }
 
         // Transport controls
         Row(

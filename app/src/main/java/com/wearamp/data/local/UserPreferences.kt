@@ -22,6 +22,7 @@ class UserPreferences @Inject constructor(
     companion object {
         private val KEY_AUTH_TOKEN = stringPreferencesKey("auth_token")
         private val KEY_SERVER_URL = stringPreferencesKey("server_url")
+        private val KEY_SERVER_TOKEN = stringPreferencesKey("server_token")
         private val KEY_CLIENT_ID = stringPreferencesKey("client_id")
         private val KEY_USERNAME = stringPreferencesKey("username")
         private val KEY_USER_THUMB = stringPreferencesKey("user_thumb")
@@ -29,6 +30,8 @@ class UserPreferences @Inject constructor(
 
     val authToken: Flow<String?> = context.dataStore.data.map { it[KEY_AUTH_TOKEN] }
     val serverUrl: Flow<String?> = context.dataStore.data.map { it[KEY_SERVER_URL] }
+    /** The resource-specific access token for the Plex server (used for streaming). */
+    val serverToken: Flow<String?> = context.dataStore.data.map { it[KEY_SERVER_TOKEN] }
     val clientId: Flow<String?> = context.dataStore.data.map { it[KEY_CLIENT_ID] }
     val username: Flow<String?> = context.dataStore.data.map { it[KEY_USERNAME] }
 
@@ -38,6 +41,10 @@ class UserPreferences @Inject constructor(
 
     suspend fun saveServerUrl(url: String) {
         context.dataStore.edit { it[KEY_SERVER_URL] = url }
+    }
+
+    suspend fun saveServerToken(token: String) {
+        context.dataStore.edit { it[KEY_SERVER_TOKEN] = token }
     }
 
     suspend fun saveClientId(id: String) {

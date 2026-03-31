@@ -81,8 +81,12 @@ class AuthRepository @Inject constructor(
         val best = connections.firstOrNull { it.local }
             ?: connections.first()
 
-        val serverUrl = best.uri.trimEnd('/') + "/"
+        val serverUrl = best.uri.trimEnd('/')
         userPreferences.saveServerUrl(serverUrl)
+
+        // Save the server-specific access token for direct media access
+        server.accessToken?.let { userPreferences.saveServerToken(it) }
+
         serverUrl
     }
 
