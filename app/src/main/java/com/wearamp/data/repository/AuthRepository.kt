@@ -76,7 +76,7 @@ class AuthRepository @Inject constructor(
 
         val rawUri = connection.uri.trim()
         val parsedUri = rawUri.toHttpUrlOrNull()
-            ?: throw Exception("Invalid server URI '$rawUri'")
+            ?: throw Exception("Invalid server URI format")
 
         if (parsedUri.scheme != "http" && parsedUri.scheme != "https") {
             throw Exception("Unsupported server URI scheme '${parsedUri.scheme}'")
