@@ -67,7 +67,7 @@ class AuthRepository @Inject constructor(
             ?: resources.firstOrNull { it.provides.contains("server") }
             ?: throw Exception("No Plex servers found on this account")
 
-        val connectionWithUri = server.connections
+        val parsedConnection = server.connections
             ?.mapNotNull { connection ->
                 val parsed = connection.uri.trim().toHttpUrlOrNull()
                 parsed?.let { connection to parsed }
@@ -79,15 +79,18 @@ class AuthRepository @Inject constructor(
             ?.firstOrNull()
             ?: throw Exception("No valid connections available for server '${server.name}'")
 
-        val (connection, parsedUri) = connectionWithUri
+        val (connection, parsedUri) = parsedConnection
+        val serverUrl = parsedUri.withTrailingSlash()
+        userPreferences.saveServerUrl(serverUrl)
+        serverUrl
+    }
 
-        val path = parsedUri.encodedPath
-        val serverUrl = parsedUri.newBuilder()
+    private fun HttpUrl.withTrailingSlash(): String {
+        val path = encodedPath
+        return newBuilder()
             .encodedPath(if (path.endsWith("/")) path else "$path/")
             .build()
             .toString()
-        userPreferences.saveServerUrl(serverUrl)
-        serverUrl
     }
 
     suspend fun logout() {
