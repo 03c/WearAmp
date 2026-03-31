@@ -79,7 +79,7 @@ class AuthRepository @Inject constructor(
             ?.firstOrNull()
             ?: throw Exception("No valid connections available for server '${server.name}'")
 
-        val (selectedConnection, parsedUri) = bestConnection
+        val (_, parsedUri) = bestConnection
         val serverUrl = parsedUri.withTrailingSlash()
         userPreferences.saveServerUrl(serverUrl)
         serverUrl
