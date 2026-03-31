@@ -36,7 +36,7 @@ In the meantime you can build and sideload it yourself — see [Building from so
 2. Tap **Sign In** — a short PIN code will appear.
 3. On any device with a browser, go to **[plex.tv/link](https://plex.tv/link)** and enter the PIN.
 4. Once your Plex account is linked, the app navigates to your **Library**.
-5. Open **Settings** and tap **Server** to enter your Plex server URL, for example `http://192.168.1.100:32400`.
+5. Scroll to the bottom of the **Library** screen and tap **Settings**, then tap **Server** to enter your Plex server URL, for example `http://192.168.1.100:32400`.
 
 That's it — your music library is ready to browse.
 
