@@ -5,12 +5,14 @@ import android.content.Context
 import android.util.Log
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.MoreExecutors
 import com.wearamp.data.api.model.PlexMetadata
 import com.wearamp.data.local.UserPreferences
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.sync.Mutex
@@ -100,8 +102,13 @@ class PlaybackManager @Inject constructor(
         Log.d(TAG, "Queueing ${mediaItems.size} tracks, first: ${mediaItems.first().mediaMetadata.title}")
         Log.d(TAG, "First URL: ${mediaItems.first().localConfiguration?.uri}")
 
-        val savedRepeatMode = userPreferences.repeatMode.firstOrNull() ?: 2 // 2 = Player.REPEAT_MODE_ALL
-        val savedShuffle = userPreferences.shuffleModeEnabled.firstOrNull() ?: false
+        // Map stored Int to a valid @Player.RepeatMode constant to satisfy lint.
+        val savedRepeatMode = when (userPreferences.repeatMode.first()) {
+            Player.REPEAT_MODE_ONE -> Player.REPEAT_MODE_ONE
+            Player.REPEAT_MODE_ALL -> Player.REPEAT_MODE_ALL
+            else -> Player.REPEAT_MODE_OFF
+        }
+        val savedShuffle = userPreferences.shuffleModeEnabled.first()
 
         mc.setMediaItems(mediaItems)
         mc.repeatMode = savedRepeatMode

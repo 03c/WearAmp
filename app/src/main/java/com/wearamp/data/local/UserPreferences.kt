@@ -31,6 +31,8 @@ class UserPreferences @Inject constructor(
         private val KEY_SHUFFLE_MODE = booleanPreferencesKey("shuffle_mode")
         /** Stored as an Int matching Player.REPEAT_MODE_* constants (0=off, 1=one, 2=all). */
         private val KEY_REPEAT_MODE = intPreferencesKey("repeat_mode")
+        /** Matches Player.REPEAT_MODE_ALL; preserves the original hardcoded default. */
+        internal const val DEFAULT_REPEAT_MODE = 2
     }
 
     val authToken: Flow<String?> = context.dataStore.data.map { it[KEY_AUTH_TOKEN] }
@@ -40,8 +42,8 @@ class UserPreferences @Inject constructor(
     val clientId: Flow<String?> = context.dataStore.data.map { it[KEY_CLIENT_ID] }
     val username: Flow<String?> = context.dataStore.data.map { it[KEY_USERNAME] }
     val shuffleModeEnabled: Flow<Boolean> = context.dataStore.data.map { it[KEY_SHUFFLE_MODE] ?: false }
-    /** Persisted repeat mode; defaults to 2 (Player.REPEAT_MODE_ALL) to match original behaviour. */
-    val repeatMode: Flow<Int> = context.dataStore.data.map { it[KEY_REPEAT_MODE] ?: 2 }
+    /** Persisted repeat mode; defaults to REPEAT_MODE_ALL to match original behaviour. */
+    val repeatMode: Flow<Int> = context.dataStore.data.map { it[KEY_REPEAT_MODE] ?: DEFAULT_REPEAT_MODE }
 
     suspend fun saveAuthToken(token: String) {
         context.dataStore.edit { it[KEY_AUTH_TOKEN] = token }

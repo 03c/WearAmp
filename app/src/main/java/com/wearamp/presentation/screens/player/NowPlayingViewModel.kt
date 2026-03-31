@@ -171,7 +171,6 @@ class NowPlayingViewModel @Inject constructor(
         val newValue = !controller.shuffleModeEnabled
         controller.shuffleModeEnabled = newValue
         viewModelScope.launch { userPreferences.saveShuffleMode(newValue) }
-        updateState()
     }
 
     fun cycleRepeatMode() {
@@ -183,7 +182,6 @@ class NowPlayingViewModel @Inject constructor(
         }
         controller.repeatMode = newMode
         viewModelScope.launch { userPreferences.saveRepeatMode(newMode) }
-        updateState()
     }
 
     override fun onCleared() {
