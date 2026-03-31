@@ -1,7 +1,7 @@
 ---
 title: Contributing to WearAmp
 layout: page
-permalink: /docs/contributing/
+permalink: /guides/contributing/
 description: "How to contribute to WearAmp — dev setup, project structure, and pull request guidelines."
 ---
 

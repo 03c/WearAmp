@@ -8,17 +8,13 @@ markdown: kramdown
 highlighter: rouge
 permalink: pretty
 
-# Exclude app/build files from Jekyll processing
+# Exclude build artefacts and bundler files from Jekyll processing
 exclude:
   - Gemfile.lock
   - README.md
   - vendor
-
-# Collections for docs
-collections:
-  docs:
-    output: true
-    permalink: /docs/:slug/
+  - .sass-cache
+  - .jekyll-cache
 
 defaults:
   - scope:
@@ -26,10 +22,10 @@ defaults:
     values:
       layout: default
   - scope:
-      path: "_docs"
+      path: "guides"
     values:
       layout: page
   - scope:
-      path: "privacy"
+      path: "privacy.md"
     values:
       layout: page

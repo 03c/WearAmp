@@ -1,7 +1,7 @@
 ---
 title: Deployment
 layout: page
-permalink: /docs/deployment/
+permalink: /guides/deployment/
 description: "WearAmp deployment — GitHub Actions release pipeline and Google Play setup."
 ---
 
