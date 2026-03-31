@@ -7,8 +7,8 @@ WearAmp is deployed to Google Play via GitHub Actions. Every merge to `main` aut
 The workflow lives at [`.github/workflows/deploy.yml`](../.github/workflows/deploy.yml) and runs on every push to `main`. It:
 
 1. Decodes the release keystore from a base64-encoded GitHub secret.
-2. Computes a `versionCode` as `(run_number * 1000) + run_attempt` — this auto-increments on every run so you never touch it.
-3. Reads `versionName` from [`version.properties`](../version.properties) — bump this manually before each meaningful release.
+2. Uses the GitHub Actions `run_number` as both the `versionCode` and the patch component of the version name — so run 42 produces version `1.0.42`.
+3. Reads `VERSION_MAJOR_MINOR` from [`version.properties`](../version.properties) and combines it with the run number to form the full `versionName` (e.g. `1.0.42`).
 4. Builds a signed release AAB with `./gradlew :app:bundleRelease` (includes native debug symbols).
 5. Creates a GitHub Release and attaches the AAB.
 6. Uploads the AAB to the **Wear OS Internal Testing** track (`wear:internal`) on Google Play for package `com.wearamp` with **draft** status.
@@ -80,15 +80,15 @@ After creating the internal testing track, you must add testers or the release w
 
 ---
 
-## Bumping the version name
+## Bumping the version
 
-Edit [`version.properties`](../version.properties) and update `VERSION_NAME` before merging:
+Edit [`version.properties`](../version.properties) and update `VERSION_MAJOR_MINOR` before merging:
 
 ```properties
-VERSION_NAME=1.1.0
+VERSION_MAJOR_MINOR=1.1
 ```
 
-The `versionCode` is always derived from the GitHub Actions run number and never needs manual changes.
+The patch number is always the GitHub Actions run number (e.g. `1.1.58`), and the `versionCode` is set to the same run number. You never need to manage either manually.
 
 ---
 

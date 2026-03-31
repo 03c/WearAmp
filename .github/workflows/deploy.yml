@@ -35,10 +35,12 @@ jobs:
         run: printenv KEYSTORE_B64 | base64 --decode > "${{ github.workspace }}/app/release.jks"
 
       - name: Compute version code
-        run: echo "VERSION_CODE=$(( ${{ github.run_number }} * 1000 + ${{ github.run_attempt }} ))" >> "$GITHUB_ENV"
+        run: echo "VERSION_CODE=${{ github.run_number }}" >> "$GITHUB_ENV"
 
       - name: Read version name
-        run: echo "VERSION_NAME=$(grep VERSION_NAME version.properties | cut -d= -f2)" >> "$GITHUB_ENV"
+        run: |
+          MAJOR_MINOR=$(grep VERSION_MAJOR_MINOR version.properties | cut -d= -f2)
+          echo "VERSION_NAME=${MAJOR_MINOR}.${{ github.run_number }}" >> "$GITHUB_ENV"
 
       - name: Build Release AAB
         env:
@@ -51,8 +53,8 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@da05d552573ad5aba039eaac05058a918a7bf631 # v2.2.2
         with:
-          tag_name: v${{ env.VERSION_NAME }}+${{ env.VERSION_CODE }}
-          name: v${{ env.VERSION_NAME }} (build ${{ env.VERSION_CODE }})
+          tag_name: v${{ env.VERSION_NAME }}
+          name: v${{ env.VERSION_NAME }}
           generate_release_notes: true
           files: app/build/outputs/bundle/release/*.aab
 

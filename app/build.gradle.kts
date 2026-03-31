@@ -11,15 +11,15 @@ plugins {
 
 // ---------------------------------------------------------------------------
 // Version management
-// In CI the VERSION_CODE env var is set to the GitHub Actions run number,
-// which auto-increments on every merge to main. The human-readable
-// VERSION_NAME is read from version.properties (bump it manually for each
-// meaningful release).
+// In CI the VERSION_CODE env var is set to the GitHub Actions run number and
+// the full version name is computed as MAJOR.MINOR.RUN_NUMBER (e.g. 1.0.42).
+// Bump VERSION_MAJOR_MINOR in version.properties for significant releases.
 // ---------------------------------------------------------------------------
 val versionProps = Properties().apply {
     rootProject.file("version.properties").takeIf { it.exists() }
         ?.inputStream()?.use { load(it) }
 }
+val majorMinor = versionProps.getProperty("VERSION_MAJOR_MINOR", "1.0")
 
 android {
     namespace = "com.wearamp"
@@ -30,7 +30,7 @@ android {
         minSdk = 30
         targetSdk = 35
         versionCode = System.getenv("VERSION_CODE")?.toIntOrNull() ?: 1
-        versionName = versionProps.getProperty("VERSION_NAME", "1.0.0")
+        versionName = System.getenv("VERSION_CODE")?.let { "$majorMinor.$it" } ?: "$majorMinor.0-dev"
     }
 
     // ---------------------------------------------------------------------------
