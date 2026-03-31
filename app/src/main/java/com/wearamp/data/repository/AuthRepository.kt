@@ -1,10 +1,12 @@
 package com.wearamp.data.repository
 
 import com.wearamp.data.api.PlexAuthApi
+import com.wearamp.data.api.model.PlexConnection
 import com.wearamp.data.api.model.PlexPin
 import com.wearamp.data.api.model.PlexUser
 import com.wearamp.data.local.UserPreferences
 import kotlinx.coroutines.delay
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -65,11 +67,22 @@ class AuthRepository @Inject constructor(
             ?: throw Exception("No Plex servers found on this account")
 
         val connection = server.connections
-            ?.sortedByDescending { it.local }
+            ?.sortedWith(
+                compareByDescending<PlexConnection> { it.local }
+                    .thenByDescending { it.protocol.equals("https", ignoreCase = true) }
+            )
             ?.firstOrNull()
             ?: throw Exception("No connections available for server '${server.name}'")
 
-        val uri = connection.uri.trimEnd('/') + "/"
+        val normalizedUri = connection.uri.trim().trimEnd('/') + "/"
+        val parsedUri = normalizedUri.toHttpUrlOrNull()
+            ?: throw Exception("Invalid server URI '${connection.uri}'")
+
+        if (parsedUri.scheme != "http" && parsedUri.scheme != "https") {
+            throw Exception("Unsupported server URI scheme '${parsedUri.scheme}'")
+        }
+
+        val uri = parsedUri.toString()
         userPreferences.saveServerUrl(uri)
         uri
     }
