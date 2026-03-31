@@ -73,7 +73,7 @@ class AuthRepository @Inject constructor(
                 parsed?.let { connection to parsed }
             }
             ?.sortedWith(
-                compareByDescending<Pair<PlexConnection, HttpUrl>> { it.first.local }
+                compareByDescending { it.first.local }
                     .thenByDescending { it.second.scheme.equals("https", ignoreCase = true) }
             )
             ?.firstOrNull()
