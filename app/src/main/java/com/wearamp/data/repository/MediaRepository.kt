@@ -57,6 +57,20 @@ class MediaRepository @Inject constructor(
             ?: emptyList()
     }
 
+    suspend fun getAllAlbumsInSection(sectionId: String): Result<List<PlexMetadata>> = apiCall {
+        plexMediaApi.getAllAlbums(sectionId, token())
+            .mediaContainer
+            .items
+            ?: emptyList()
+    }
+
+    suspend fun getArtistTracks(artistId: String): Result<List<PlexMetadata>> = apiCall {
+        plexMediaApi.getArtistTracks(artistId, token())
+            .mediaContainer
+            .items
+            ?: emptyList()
+    }
+
     suspend fun getTracks(albumId: String): Result<List<PlexMetadata>> = apiCall {
         plexMediaApi.getTracks(albumId, token())
             .mediaContainer

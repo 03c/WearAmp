@@ -7,7 +7,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
-import androidx.wear.compose.foundation.lazy.items
 import androidx.wear.compose.material.Chip
 import androidx.wear.compose.material.ChipDefaults
 import androidx.wear.compose.material.CircularProgressIndicator
@@ -17,7 +16,8 @@ import androidx.wear.compose.material.Text
 
 @Composable
 fun LibraryScreen(
-    onSectionSelected: (sectionId: String) -> Unit,
+    onArtistsClick: (sectionId: String) -> Unit,
+    onAlbumsClick: (sectionId: String) -> Unit,
     onNowPlayingClick: () -> Unit,
     onSettingsClick: () -> Unit,
     viewModel: LibraryViewModel = hiltViewModel()
@@ -29,15 +29,22 @@ fun LibraryScreen(
             CircularProgressIndicator(modifier = Modifier.fillMaxSize())
         }
 
-        is LibraryUiState.Success -> {
+        is LibraryUiState.Ready -> {
             ScalingLazyColumn(modifier = Modifier.fillMaxSize()) {
                 item {
-                    ListHeader { Text(text = "Music Libraries") }
+                    ListHeader { Text(text = "WearAmp") }
                 }
-                items(state.sections) { section ->
+                item {
                     Chip(
-                        label = { Text(text = section.title) },
-                        onClick = { onSectionSelected(section.key) },
+                        label = { Text(text = "Artists") },
+                        onClick = { onArtistsClick(state.sectionId) },
+                        colors = ChipDefaults.primaryChipColors()
+                    )
+                }
+                item {
+                    Chip(
+                        label = { Text(text = "Albums") },
+                        onClick = { onAlbumsClick(state.sectionId) },
                         colors = ChipDefaults.primaryChipColors()
                     )
                 }

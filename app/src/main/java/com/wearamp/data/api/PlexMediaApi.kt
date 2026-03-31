@@ -38,6 +38,21 @@ interface PlexMediaApi {
         @Header("X-Plex-Token") token: String
     ): PlexMediaContainer<PlexMusicContainer>
 
+    /** All albums in a music library section (type 9 = album). */
+    @GET("library/sections/{sectionId}/all")
+    suspend fun getAllAlbums(
+        @Path("sectionId") sectionId: String,
+        @Header("X-Plex-Token") token: String,
+        @Query("type") type: Int = 9
+    ): PlexMediaContainer<PlexMusicContainer>
+
+    /** All leaf tracks for an artist (skips album grouping). */
+    @GET("library/metadata/{artistId}/allLeaves")
+    suspend fun getArtistTracks(
+        @Path("artistId") artistId: String,
+        @Header("X-Plex-Token") token: String
+    ): PlexMediaContainer<PlexMusicContainer>
+
     @GET("library/sections/{sectionId}/all")
     suspend fun getRecentlyAdded(
         @Path("sectionId") sectionId: String,

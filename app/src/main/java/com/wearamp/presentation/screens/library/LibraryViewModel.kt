@@ -2,7 +2,6 @@ package com.wearamp.presentation.screens.library
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.wearamp.data.api.model.PlexLibrarySection
 import com.wearamp.data.repository.MediaRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,7 +12,8 @@ import javax.inject.Inject
 
 sealed interface LibraryUiState {
     data object Loading : LibraryUiState
-    data class Success(val sections: List<PlexLibrarySection>) : LibraryUiState
+    /** We resolved the first music library section – ready to browse. */
+    data class Ready(val sectionId: String) : LibraryUiState
     data class Error(val message: String) : LibraryUiState
 }
 
@@ -34,7 +34,12 @@ class LibraryViewModel @Inject constructor(
             _uiState.value = LibraryUiState.Loading
             mediaRepository.getMusicLibrarySections().fold(
                 onSuccess = { sections ->
-                    _uiState.value = LibraryUiState.Success(sections)
+                    val first = sections.firstOrNull()
+                    if (first != null) {
+                        _uiState.value = LibraryUiState.Ready(first.key)
+                    } else {
+                        _uiState.value = LibraryUiState.Error("No music libraries found")
+                    }
                 },
                 onFailure = { error ->
                     _uiState.value = LibraryUiState.Error(

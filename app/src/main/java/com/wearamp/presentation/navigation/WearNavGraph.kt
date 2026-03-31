@@ -8,6 +8,7 @@ import androidx.wear.compose.navigation.SwipeDismissableNavHost
 import androidx.wear.compose.navigation.composable
 import androidx.wear.compose.navigation.rememberSwipeDismissableNavController
 import com.wearamp.presentation.screens.browse.BrowseAlbumsScreen
+import com.wearamp.presentation.screens.browse.BrowseAllAlbumsScreen
 import com.wearamp.presentation.screens.browse.BrowseArtistsScreen
 import com.wearamp.presentation.screens.browse.BrowseTracksScreen
 import com.wearamp.presentation.screens.library.LibraryScreen
@@ -40,8 +41,11 @@ fun WearNavGraph(
 
         composable(Screen.LIBRARY) {
             LibraryScreen(
-                onSectionSelected = { sectionId ->
+                onArtistsClick = { sectionId ->
                     navController.navigate(Screen.browseArtists(sectionId))
+                },
+                onAlbumsClick = { sectionId ->
+                    navController.navigate(Screen.browseAllAlbums(sectionId))
                 },
                 onNowPlayingClick = {
                     navController.navigate(Screen.NOW_PLAYING)
@@ -56,6 +60,15 @@ fun WearNavGraph(
             BrowseArtistsScreen(
                 onArtistSelected = { artistId ->
                     navController.navigate(Screen.browseAlbums(artistId))
+                },
+                onNowPlayingClick = { navController.navigate(Screen.NOW_PLAYING) }
+            )
+        }
+
+        composable(Screen.BROWSE_ALL_ALBUMS) { _ ->
+            BrowseAllAlbumsScreen(
+                onAlbumSelected = { albumId ->
+                    navController.navigate(Screen.browseTracks(albumId))
                 },
                 onNowPlayingClick = { navController.navigate(Screen.NOW_PLAYING) }
             )
