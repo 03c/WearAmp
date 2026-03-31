@@ -4,7 +4,6 @@ on:
   push:
     branches: [ main ]
 
-# Prevent concurrent deploys; cancel older runs if a new merge lands.
 concurrency:
   group: deploy-play-store
   cancel-in-progress: true
@@ -30,21 +29,9 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      # Decode the base64-encoded keystore secret into a file that Gradle can use.
-      # To generate KEYSTORE_BASE64, run: base64 -w 0 release.jks
-      # (On macOS: base64 -i release.jks | tr -d '\n')
-      # Then add the output as a GitHub Actions secret named KEYSTORE_BASE64.
       - name: Decode keystore
-        run: |
-          printf '%s' "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > "${{ github.workspace }}/app/release.jks"
+        run: printf '%s' "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > "${{ github.workspace }}/app/release.jks"
 
-      # VERSION_CODE combines the run number and run attempt so that both new
-      # merges and workflow re-runs always produce a strictly higher code than
-      # any previous upload (Play Console rejects duplicate or lower codes).
-      # We multiply run_number by 1000 so that even if a workflow is re-run
-      # hundreds of times, run_attempt values will not collide with adjacent runs.
-      # Note: arithmetic is evaluated in bash because GitHub Actions expressions
-      # do not support operators like * or + inside ${{ }}.
       - name: Compute version code
         run: echo "VERSION_CODE=$(( ${{ github.run_number }} * 1000 + ${{ github.run_attempt }} ))" >> "$GITHUB_ENV"
 
