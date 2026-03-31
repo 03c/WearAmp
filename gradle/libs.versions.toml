@@ -1,8 +1,8 @@
 [versions]
-agp = "8.12.3"
-kotlin = "2.0.21"
-ksp = "2.0.21-1.0.28"
-hilt = "2.54"
+agp = "9.1.0"
+kotlin = "2.2.10"
+ksp = "2.3.2"
+hilt = "2.56.2"
 composeBom = "2024.12.01"
 wearCompose = "1.4.1"
 horologist = "0.6.22"
