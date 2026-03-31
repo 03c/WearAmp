@@ -88,9 +88,9 @@ through the app, please contact us so we can address it.
 
 ## 7. Changes to This Policy
 
-We may update this Privacy Policy from time to time. The "Last updated" date at the top of this
-page reflects the most recent revision. Continued use of WearAmp after changes are posted
-constitutes your acceptance of the updated policy.
+We may update this Privacy Policy from time to time. When we do, we will update this page to
+reflect the changes. Continued use of WearAmp after changes are posted constitutes your
+acceptance of the updated policy.
 
 ## 8. Contact
 
