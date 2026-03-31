@@ -21,7 +21,13 @@ fun WearNavGraph(
     navViewModel: NavViewModel = hiltViewModel()
 ) {
     val authToken by navViewModel.userPreferences.authToken.collectAsState(initial = null)
-    val startDestination = if (authToken != null) Screen.LIBRARY else Screen.LOGIN
+    val isMediaActive by navViewModel.isMediaActive.collectAsState()
+
+    val startDestination = when {
+        authToken == null -> Screen.LOGIN
+        isMediaActive -> Screen.NOW_PLAYING
+        else -> Screen.LIBRARY
+    }
 
     val navController = rememberSwipeDismissableNavController()
 

@@ -13,9 +13,12 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -41,6 +44,7 @@ class NowPlayingViewModel @Inject constructor(
 
     private var controllerFuture: ListenableFuture<MediaController>? = null
     private var mediaController: MediaController? = null
+    private var positionJob: Job? = null
 
     init {
         connectToMediaService()
@@ -58,6 +62,7 @@ class NowPlayingViewModel @Inject constructor(
                     mediaController = controllerFuture?.get()
                     mediaController?.addListener(playerListener)
                     updateState()
+                    startPositionUpdates()
                 } catch (e: Exception) {
                     _uiState.value = _uiState.value.copy(
                         connectionError = e.message ?: "Failed to connect to media service"
@@ -69,9 +74,38 @@ class NowPlayingViewModel @Inject constructor(
     }
 
     private val playerListener = object : Player.Listener {
-        override fun onIsPlayingChanged(isPlaying: Boolean) = updateState()
+        override fun onIsPlayingChanged(isPlaying: Boolean) {
+            updateState()
+            if (isPlaying) startPositionUpdates() else stopPositionUpdates()
+        }
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) = updateState()
         override fun onPlaybackStateChanged(playbackState: Int) = updateState()
+    }
+
+    private fun startPositionUpdates() {
+        if (positionJob?.isActive == true) return
+        positionJob = viewModelScope.launch {
+            while (isActive) {
+                val controller = mediaController
+                if (controller != null) {
+                    _uiState.value = _uiState.value.copy(
+                        currentPositionMs = controller.currentPosition.coerceAtLeast(0L),
+                        durationMs = controller.duration.coerceAtLeast(0L)
+                    )
+                }
+                delay(500L)
+            }
+        }
+    }
+
+    private fun stopPositionUpdates() {
+        positionJob?.cancel()
+        positionJob = null
+        // One final position snapshot
+        val controller = mediaController ?: return
+        _uiState.value = _uiState.value.copy(
+            currentPositionMs = controller.currentPosition.coerceAtLeast(0L)
+        )
     }
 
     private fun updateState() {
@@ -82,6 +116,7 @@ class NowPlayingViewModel @Inject constructor(
             trackTitle = mediaItem?.mediaMetadata?.title?.toString() ?: "Nothing playing",
             artistName = mediaItem?.mediaMetadata?.artist?.toString() ?: "",
             albumTitle = mediaItem?.mediaMetadata?.albumTitle?.toString() ?: "",
+            currentPositionMs = controller.currentPosition.coerceAtLeast(0L),
             durationMs = controller.duration.coerceAtLeast(0L),
             thumbUrl = mediaItem?.mediaMetadata?.artworkUri?.toString()
         )
@@ -101,7 +136,12 @@ class NowPlayingViewModel @Inject constructor(
         mediaController?.seekToPreviousMediaItem()
     }
 
+    fun seekTo(positionMs: Long) {
+        mediaController?.seekTo(positionMs)
+    }
+
     override fun onCleared() {
+        positionJob?.cancel()
         mediaController?.removeListener(playerListener)
         controllerFuture?.let { MediaController.releaseFuture(it) }
         super.onCleared()
