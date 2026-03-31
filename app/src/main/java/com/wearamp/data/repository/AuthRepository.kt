@@ -53,6 +53,27 @@ class AuthRepository @Inject constructor(
         user
     }
 
+    /**
+     * Fetch the user's Plex servers and save the first owned server's connection URI.
+     * Prefers a local connection when available.
+     */
+    suspend fun fetchAndSaveServerUrl(authToken: String): Result<String> = runCatching {
+        val resources = plexAuthApi.getResources(authToken)
+        val server = resources
+            .firstOrNull { it.provides.contains("server") && it.owned == true }
+            ?: resources.firstOrNull { it.provides.contains("server") }
+            ?: throw Exception("No Plex servers found on this account")
+
+        val connection = server.connections
+            ?.sortedByDescending { it.local }
+            ?.firstOrNull()
+            ?: throw Exception("No connections available for server '${server.name}'")
+
+        val uri = connection.uri.trimEnd('/') + "/"
+        userPreferences.saveServerUrl(uri)
+        uri
+    }
+
     suspend fun logout() {
         userPreferences.clearAll()
     }
