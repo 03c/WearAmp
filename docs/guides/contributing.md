@@ -1,5 +1,5 @@
 ---
-title: Contributing to WearAmp
+title: Contributing
 layout: page
 permalink: /guides/contributing/
 description: "How to contribute to WearAmp — dev setup, project structure, and pull request guidelines."
