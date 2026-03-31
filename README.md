@@ -2,7 +2,7 @@
 
 > A Plex music player for your wrist — stream your Plex library directly from a Wear OS watch, no phone required.
 
-[![CI](https://github.com/03c/WearAmp/actions/workflows/deploy.yml/badge.svg)](https://github.com/03c/WearAmp/actions/workflows/deploy.yml)
+[![Deploy](https://github.com/03c/WearAmp/actions/workflows/deploy.yml/badge.svg)](https://github.com/03c/WearAmp/actions/workflows/deploy.yml)
 
 ---
 
