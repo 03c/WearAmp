@@ -10,7 +10,3 @@ data class PlexUser(
     @SerializedName("email") val email: String,
     @SerializedName("thumb") val thumb: String?
 )
-
-data class PlexUserResponse(
-    @SerializedName("user") val user: PlexUser
-)

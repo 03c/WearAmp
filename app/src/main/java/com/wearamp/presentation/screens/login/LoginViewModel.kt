@@ -14,8 +14,7 @@ import javax.inject.Inject
 sealed interface LoginUiState {
     data object Idle : LoginUiState
     data object GeneratingPin : LoginUiState
-    data class PinReady(val pin: String, val pinId: Long) : LoginUiState
-    data object WaitingForAuth : LoginUiState
+    data class WaitingForAuth(val pin: String) : LoginUiState
     data object Success : LoginUiState
     data class Error(val message: String) : LoginUiState
 }
@@ -35,7 +34,7 @@ class LoginViewModel @Inject constructor(
             _uiState.value = LoginUiState.GeneratingPin
             authRepository.createPin(clientId).fold(
                 onSuccess = { pin ->
-                    _uiState.value = LoginUiState.PinReady(pin.code, pin.id)
+                    _uiState.value = LoginUiState.WaitingForAuth(pin.code)
                     waitForAuth(pin.id)
                 },
                 onFailure = { error ->
@@ -49,7 +48,6 @@ class LoginViewModel @Inject constructor(
 
     private fun waitForAuth(pinId: Long) {
         viewModelScope.launch {
-            _uiState.value = LoginUiState.WaitingForAuth
             authRepository.pollForAuthToken(pinId, clientId).fold(
                 onSuccess = { token ->
                     authRepository.fetchAndSaveUser(token).fold(

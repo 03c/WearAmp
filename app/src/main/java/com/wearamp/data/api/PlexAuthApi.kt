@@ -1,8 +1,7 @@
 package com.wearamp.data.api
 
 import com.wearamp.data.api.model.PlexPin
-import com.wearamp.data.api.model.PlexPinResponse
-import com.wearamp.data.api.model.PlexUserResponse
+import com.wearamp.data.api.model.PlexUser
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
@@ -26,16 +25,16 @@ interface PlexAuthApi {
         @Header("X-Plex-Client-Identifier") clientId: String,
         @Header("X-Plex-Product") product: String,
         @Field("strong") strong: Boolean = true
-    ): PlexPinResponse
+    ): PlexPin
 
     @GET("pins/{id}")
     suspend fun getPin(
         @Path("id") pinId: Long,
         @Header("X-Plex-Client-Identifier") clientId: String
-    ): PlexPinResponse
+    ): PlexPin
 
     @GET("user")
     suspend fun getUser(
         @Header("X-Plex-Token") authToken: String
-    ): PlexUserResponse
+    ): PlexUser
 }

@@ -24,7 +24,7 @@ class AuthRepository @Inject constructor(
         plexAuthApi.createPin(
             clientId = clientId,
             product = PLEX_PRODUCT
-        ).pin
+        )
     }
 
     /**
@@ -35,7 +35,7 @@ class AuthRepository @Inject constructor(
         repeat(PIN_POLL_MAX_ATTEMPTS) {
             delay(PIN_POLL_INTERVAL_MS)
             val result = runCatching {
-                plexAuthApi.getPin(pinId = pinId, clientId = clientId).pin
+                plexAuthApi.getPin(pinId = pinId, clientId = clientId)
             }
             val token = result.getOrNull()?.authToken
             if (token != null) {
@@ -48,7 +48,7 @@ class AuthRepository @Inject constructor(
     }
 
     suspend fun fetchAndSaveUser(authToken: String): Result<PlexUser> = runCatching {
-        val user = plexAuthApi.getUser(authToken).user
+        val user = plexAuthApi.getUser(authToken)
         userPreferences.saveUserInfo(user.username, user.thumb)
         user
     }

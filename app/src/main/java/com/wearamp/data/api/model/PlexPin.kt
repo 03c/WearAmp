@@ -8,7 +8,3 @@ data class PlexPin(
     @SerializedName("auth_token") val authToken: String?,
     @SerializedName("expires_in") val expiresIn: Int
 )
-
-data class PlexPinResponse(
-    @SerializedName("pin") val pin: PlexPin
-)

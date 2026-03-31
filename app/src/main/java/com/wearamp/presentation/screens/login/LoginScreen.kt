@@ -64,36 +64,28 @@ fun LoginScreen(
                 Text(text = "Generating PIN…", textAlign = TextAlign.Center)
             }
 
-            is LoginUiState.PinReady -> {
+            is LoginUiState.WaitingForAuth -> {
                 Text(
-                    text = "Visit plex.tv/link",
+                    text = "Go to plex.tv/link",
                     style = MaterialTheme.typography.body2,
                     textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Enter code:",
+                    text = "and enter this code:",
                     style = MaterialTheme.typography.body2,
                     textAlign = TextAlign.Center,
                     color = MaterialTheme.colors.onBackground.copy(alpha = 0.7f)
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = state.pin,
                     style = MaterialTheme.typography.title1,
                     color = MaterialTheme.colors.primary,
                     textAlign = TextAlign.Center
                 )
-            }
-
-            is LoginUiState.WaitingForAuth -> {
-                CircularProgressIndicator()
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Waiting for\nauthorisation…",
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.body2
-                )
+                CircularProgressIndicator()
             }
 
             is LoginUiState.Success -> {
