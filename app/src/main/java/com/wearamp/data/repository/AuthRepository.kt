@@ -69,7 +69,7 @@ class AuthRepository @Inject constructor(
         val connection = server.connections
             ?.sortedWith(
                 compareByDescending { it.local }
-                    .thenByDescending { it.protocol.equals("https", ignoreCase = true) }
+                    .thenByDescending { it.uri.startsWith("https://", ignoreCase = true) }
             )
             ?.firstOrNull()
             ?: throw Exception("No connections available for server '${server.name}'")
@@ -77,10 +77,6 @@ class AuthRepository @Inject constructor(
         val rawUri = connection.uri.trim()
         val parsedUri = rawUri.toHttpUrlOrNull()
             ?: throw Exception("Invalid server URI format")
-
-        if (parsedUri.scheme != "http" && parsedUri.scheme != "https") {
-            throw Exception("Unsupported server URI scheme '${parsedUri.scheme}'")
-        }
 
         val path = parsedUri.encodedPath
         val uri = parsedUri.newBuilder()
