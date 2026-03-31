@@ -13,6 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
+import androidx.wear.compose.material.Button
+import androidx.wear.compose.material.ButtonDefaults
 import androidx.wear.compose.material.Chip
 import androidx.wear.compose.material.ChipDefaults
 import androidx.wear.compose.material.ListHeader
@@ -39,22 +41,28 @@ fun SettingsScreen(
     ) {
         Alert(
             title = { Text(text = "Server URL") },
-            message = {
+            negativeButton = {
+                Button(
+                    onClick = { showServerUrlDialog = false },
+                    colors = ButtonDefaults.secondaryButtonColors()
+                ) { Text("Cancel") }
+            },
+            positiveButton = {
+                Button(
+                    onClick = {
+                        if (viewModel.saveServerUrl(serverUrlInput)) {
+                            showServerUrlDialog = false
+                        }
+                    }
+                ) { Text("Save") }
+            },
+            content = {
                 if (serverUrlError != null) {
                     Text(
                         text = serverUrlError.orEmpty(),
                         color = MaterialTheme.colors.error
                     )
                 }
-            },
-            onCancel = { showServerUrlDialog = false },
-            onConfirm = {
-                if (viewModel.saveServerUrl(serverUrlInput)) {
-                    showServerUrlDialog = false
-                }
-            }
-        ) {
-            item {
                 BasicTextField(
                     value = serverUrlInput,
                     onValueChange = { serverUrlInput = it },
@@ -65,7 +73,7 @@ fun SettingsScreen(
                     cursorBrush = SolidColor(MaterialTheme.colors.primary)
                 )
             }
-        }
+        )
     }
 
     ScalingLazyColumn(modifier = Modifier.fillMaxSize()) {

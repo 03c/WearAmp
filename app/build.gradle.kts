@@ -144,6 +144,7 @@ dependencies {
 
     // Material Icons
     implementation(libs.material.icons.core)
+    implementation(libs.material.icons.extended)
 
     // Testing
     testImplementation(libs.junit)
