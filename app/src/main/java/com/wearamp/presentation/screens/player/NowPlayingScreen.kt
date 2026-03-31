@@ -18,6 +18,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.media3.common.Player
 import androidx.wear.compose.material.Button
 import androidx.wear.compose.material.ButtonDefaults
 import androidx.wear.compose.material.Icon
@@ -27,6 +28,9 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Repeat
+import androidx.compose.material.icons.filled.RepeatOne
+import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.automirrored.filled.QueueMusic
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
@@ -190,16 +194,53 @@ fun NowPlayingScreen(
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        // Queue button
-        Button(
-            onClick = onQueueClick,
-            modifier = Modifier.size(ButtonDefaults.SmallButtonSize),
-            colors = ButtonDefaults.secondaryButtonColors()
+        // Secondary controls: shuffle | queue | repeat
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.QueueMusic,
-                contentDescription = "Queue"
-            )
+            val shuffleActive = state.shuffleModeEnabled
+            Button(
+                onClick = { viewModel.toggleShuffle() },
+                modifier = Modifier.size(ButtonDefaults.SmallButtonSize),
+                colors = if (shuffleActive) ButtonDefaults.primaryButtonColors()
+                         else ButtonDefaults.secondaryButtonColors()
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Shuffle,
+                    contentDescription = if (shuffleActive) "Shuffle on" else "Shuffle off"
+                )
+            }
+
+            Button(
+                onClick = onQueueClick,
+                modifier = Modifier.size(ButtonDefaults.SmallButtonSize),
+                colors = ButtonDefaults.secondaryButtonColors()
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.QueueMusic,
+                    contentDescription = "Queue"
+                )
+            }
+
+            val repeatActive = state.repeatMode != Player.REPEAT_MODE_OFF
+            Button(
+                onClick = { viewModel.cycleRepeatMode() },
+                modifier = Modifier.size(ButtonDefaults.SmallButtonSize),
+                colors = if (repeatActive) ButtonDefaults.primaryButtonColors()
+                         else ButtonDefaults.secondaryButtonColors()
+            ) {
+                Icon(
+                    imageVector = if (state.repeatMode == Player.REPEAT_MODE_ONE)
+                        Icons.Filled.RepeatOne else Icons.Filled.Repeat,
+                    contentDescription = when (state.repeatMode) {
+                        Player.REPEAT_MODE_ONE -> "Repeat one"
+                        Player.REPEAT_MODE_ALL -> "Repeat all"
+                        else -> "Repeat off"
+                    }
+                )
+            }
         }
     }
 }

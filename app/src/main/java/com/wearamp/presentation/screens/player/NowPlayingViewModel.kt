@@ -12,6 +12,7 @@ import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
+import com.wearamp.data.local.UserPreferences
 import com.wearamp.service.WearAmpMediaService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -19,6 +20,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -32,12 +34,16 @@ data class PlayerUiState(
     val albumTitle: String = "",
     val currentPositionMs: Long = 0L,
     val durationMs: Long = 0L,
-    val playbackError: String? = null
+    val playbackError: String? = null,
+    val shuffleModeEnabled: Boolean = false,
+    /** Matches Player.REPEAT_MODE_* constants: 0 = off, 1 = one, 2 = all. */
+    val repeatMode: Int = Player.REPEAT_MODE_OFF
 )
 
 @HiltViewModel
 class NowPlayingViewModel @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val userPreferences: UserPreferences
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PlayerUiState())
@@ -61,6 +67,13 @@ class NowPlayingViewModel @Inject constructor(
                 try {
                     mediaController = controllerFuture?.get()
                     mediaController?.addListener(playerListener)
+                    // Restore persisted playback modes
+                    viewModelScope.launch {
+                        val shuffle = userPreferences.shuffleModeEnabled.first()
+                        val repeat = userPreferences.repeatMode.first()
+                        mediaController?.shuffleModeEnabled = shuffle
+                        mediaController?.repeatMode = repeat
+                    }
                     updateState()
                     // Continuously poll position regardless of play state
                     startPositionTicker()
@@ -94,6 +107,8 @@ class NowPlayingViewModel @Inject constructor(
                 playbackError = "Playback error: ${error.errorCodeName}\n${error.message}"
             )
         }
+        override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) = updateState()
+        override fun onRepeatModeChanged(repeatMode: Int) = updateState()
     }
 
     /**
@@ -127,7 +142,9 @@ class NowPlayingViewModel @Inject constructor(
             artistName = mediaItem?.mediaMetadata?.artist?.toString() ?: "",
             albumTitle = mediaItem?.mediaMetadata?.albumTitle?.toString() ?: "",
             currentPositionMs = controller.currentPosition.coerceAtLeast(0L),
-            durationMs = controller.duration.coerceAtLeast(0L)
+            durationMs = controller.duration.coerceAtLeast(0L),
+            shuffleModeEnabled = controller.shuffleModeEnabled,
+            repeatMode = controller.repeatMode
         )
     }
 
@@ -147,6 +164,26 @@ class NowPlayingViewModel @Inject constructor(
 
     fun seekTo(positionMs: Long) {
         mediaController?.seekTo(positionMs)
+    }
+
+    fun toggleShuffle() {
+        val controller = mediaController ?: return
+        val newValue = !controller.shuffleModeEnabled
+        controller.shuffleModeEnabled = newValue
+        viewModelScope.launch { userPreferences.saveShuffleMode(newValue) }
+        updateState()
+    }
+
+    fun cycleRepeatMode() {
+        val controller = mediaController ?: return
+        val newMode = when (controller.repeatMode) {
+            Player.REPEAT_MODE_OFF -> Player.REPEAT_MODE_ALL
+            Player.REPEAT_MODE_ALL -> Player.REPEAT_MODE_ONE
+            else -> Player.REPEAT_MODE_OFF
+        }
+        controller.repeatMode = newMode
+        viewModelScope.launch { userPreferences.saveRepeatMode(newMode) }
+        updateState()
     }
 
     override fun onCleared() {

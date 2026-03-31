@@ -5,7 +5,6 @@ import android.content.Context
 import android.util.Log
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
-import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.MoreExecutors
@@ -63,7 +62,8 @@ class PlaybackManager @Inject constructor(
     }
 
     /**
-     * Replace the queue with [tracks], enable repeat-all, and start playback.
+     * Replace the queue with [tracks] and start playback, applying the user's
+     * persisted shuffle and repeat mode preferences.
      */
     suspend fun playTracks(tracks: List<PlexMetadata>) {
         val mc = getController()
@@ -100,8 +100,12 @@ class PlaybackManager @Inject constructor(
         Log.d(TAG, "Queueing ${mediaItems.size} tracks, first: ${mediaItems.first().mediaMetadata.title}")
         Log.d(TAG, "First URL: ${mediaItems.first().localConfiguration?.uri}")
 
+        val savedRepeatMode = userPreferences.repeatMode.firstOrNull() ?: 2 // 2 = Player.REPEAT_MODE_ALL
+        val savedShuffle = userPreferences.shuffleModeEnabled.firstOrNull() ?: false
+
         mc.setMediaItems(mediaItems)
-        mc.repeatMode = Player.REPEAT_MODE_ALL
+        mc.repeatMode = savedRepeatMode
+        mc.shuffleModeEnabled = savedShuffle
         mc.prepare()
         mc.play()
     }
