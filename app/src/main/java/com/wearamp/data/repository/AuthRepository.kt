@@ -74,15 +74,19 @@ class AuthRepository @Inject constructor(
             ?.firstOrNull()
             ?: throw Exception("No connections available for server '${server.name}'")
 
-        val normalizedUri = connection.uri.trim().trimEnd('/') + "/"
-        val parsedUri = normalizedUri.toHttpUrlOrNull()
-            ?: throw Exception("Invalid server URI '${connection.uri}'")
+        val rawUri = connection.uri.trim()
+        val parsedUri = rawUri.toHttpUrlOrNull()
+            ?: throw Exception("Invalid server URI '$rawUri'")
 
         if (parsedUri.scheme != "http" && parsedUri.scheme != "https") {
             throw Exception("Unsupported server URI scheme '${parsedUri.scheme}'")
         }
 
-        val uri = parsedUri.toString()
+        val path = parsedUri.encodedPath
+        val uri = parsedUri.newBuilder()
+            .encodedPath(if (path.isNotEmpty() && path.endsWith("/")) path else "$path/")
+            .build()
+            .toString()
         userPreferences.saveServerUrl(uri)
         uri
     }
