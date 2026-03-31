@@ -68,7 +68,7 @@ class AuthRepository @Inject constructor(
 
         val connection = server.connections
             ?.sortedWith(
-                compareByDescending<PlexConnection> { it.local }
+                compareByDescending { it.local }
                     .thenByDescending { it.protocol.equals("https", ignoreCase = true) }
             )
             ?.firstOrNull()
@@ -84,7 +84,7 @@ class AuthRepository @Inject constructor(
 
         val path = parsedUri.encodedPath
         val uri = parsedUri.newBuilder()
-            .encodedPath(if (path.isNotEmpty() && path.endsWith("/")) path else "$path/")
+            .encodedPath(if (path.endsWith("/")) path else "$path/")
             .build()
             .toString()
         userPreferences.saveServerUrl(uri)
