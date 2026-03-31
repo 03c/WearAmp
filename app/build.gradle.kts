@@ -152,6 +152,10 @@ dependencies {
     // QR Code generation
     implementation(libs.zxing.core)
 
+    // Wear Tiles
+    implementation(libs.wear.tiles)
+    implementation(libs.wear.protolayout.material)
+
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.ext.junit)
