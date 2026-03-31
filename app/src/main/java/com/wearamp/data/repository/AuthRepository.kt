@@ -82,12 +82,12 @@ class AuthRepository @Inject constructor(
         val (connection, parsedUri) = connectionWithUri
 
         val path = parsedUri.encodedPath
-        val uri = parsedUri.newBuilder()
+        val serverUrl = parsedUri.newBuilder()
             .encodedPath(if (path.endsWith("/")) path else "$path/")
             .build()
             .toString()
-        userPreferences.saveServerUrl(uri)
-        uri
+        userPreferences.saveServerUrl(serverUrl)
+        serverUrl
     }
 
     suspend fun logout() {
