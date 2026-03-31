@@ -1,4 +1,9 @@
-# Contributing to WearAmp
+---
+title: Contributing
+layout: page
+permalink: /guides/contributing/
+description: "How to contribute to WearAmp — dev setup, project structure, and pull request guidelines."
+---
 
 Thanks for your interest in contributing! WearAmp is an open-source Wear OS music player for Plex. All kinds of contributions are welcome — bug fixes, new features, tests, and documentation improvements.
 

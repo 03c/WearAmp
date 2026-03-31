@@ -1,0 +1,31 @@
+title: WearAmp
+description: Stream your Plex music library directly from your Wear OS watch. No phone required.
+url: "https://03c.github.io"
+baseurl: "/WearAmp"
+
+# Build
+markdown: kramdown
+highlighter: rouge
+permalink: pretty
+
+# Exclude build artefacts and bundler files from Jekyll processing
+exclude:
+  - Gemfile.lock
+  - README.md
+  - vendor
+  - .sass-cache
+  - .jekyll-cache
+
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default
+  - scope:
+      path: "guides"
+    values:
+      layout: page
+  - scope:
+      path: "privacy.md"
+    values:
+      layout: page
