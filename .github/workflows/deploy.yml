@@ -4,6 +4,11 @@ on:
   push:
     branches: [ main ]
 
+# Prevent concurrent deploys; cancel older runs if a new merge lands.
+concurrency:
+  group: deploy-play-store
+  cancel-in-progress: true
+
 jobs:
   deploy:
     name: Build & Deploy to Google Play (Internal Track)
