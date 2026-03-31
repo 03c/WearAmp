@@ -9,9 +9,11 @@ The workflow lives at [`.github/workflows/deploy.yml`](../.github/workflows/depl
 1. Decodes the release keystore from a base64-encoded GitHub secret.
 2. Computes a `versionCode` as `(run_number * 1000) + run_attempt` — this auto-increments on every run so you never touch it.
 3. Reads `versionName` from [`version.properties`](../version.properties) — bump this manually before each meaningful release.
-4. Builds a signed release AAB with `./gradlew :app:bundleRelease`.
+4. Builds a signed release AAB with `./gradlew :app:bundleRelease` (includes native debug symbols).
 5. Creates a GitHub Release and attaches the AAB.
-6. Uploads the AAB to the **Internal Testing** track on Google Play for package `com.wearamp`.
+6. Uploads the AAB to the **Wear OS Internal Testing** track (`wear:internal`) on Google Play for package `com.wearamp` with **draft** status.
+
+> **Note:** Since August 2023, Wear OS apps must be published on a dedicated Wear OS release track (`wear:internal`, `wear:production`, etc.). The workflow uses `status: draft` because Google Play requires draft status for apps that haven't been fully published yet. Once the app has its first production release, you can change the status to `completed` in the workflow to auto-publish.
 
 ---
 
@@ -63,7 +65,18 @@ In your repository go to **Settings → Secrets and variables → Actions** and 
 
 ### 4 — First upload (manual)
 
-Google Play requires at least one manually uploaded AAB before the API can push subsequent updates. Build a release AAB locally (with your keystore environment variables set) or via Android Studio, then upload it to the **Internal Testing** track in Play Console for package `com.wearamp`. After that, every merge to `main` is handled automatically.
+Google Play requires at least one manually uploaded AAB before the API can push subsequent updates. Build a release AAB locally (with your keystore environment variables set) or via Android Studio, then upload it to the **Wear OS Internal Testing** track in Play Console for package `com.wearamp`. After that, every merge to `main` is handled automatically.
+
+> **Important:** When uploading via Play Console, use the **Wear OS** release track — not the standard mobile internal testing track. Since August 2023, Wear OS updates must be published on a dedicated Wear OS track.
+
+### 5 — Configure testers
+
+After creating the internal testing track, you must add testers or the release won't be available to anyone:
+
+1. In [Google Play Console](https://play.google.com/console), go to **Testing → Internal testing** (under the Wear OS section).
+2. Under **Testers**, create an email list or use a Google Group.
+3. Add tester email addresses and save.
+4. Share the opt-in link with your testers so they can access the build.
 
 ---
 
