@@ -85,11 +85,11 @@ App                        plex.tv
 
 ## Contributing
 
-Contributions are very welcome! Please read the **[Contributing Guide](https://03c.github.io/WearAmp/guides/contributing/)** for guidelines on setting up a dev environment, the project structure, and how to submit a pull request.
+Contributions are very welcome! Please read the **[Contributing Guide](https://03c.github.io/WearAmp/guides/contributing/)** ([source](docs/guides/contributing.md)) for guidelines on setting up a dev environment, the project structure, and how to submit a pull request.
 
 ## Deployment & CI
 
-Details on the GitHub Actions release pipeline and one-time Google Play setup are in the **[Deployment Guide](https://03c.github.io/WearAmp/guides/deployment/)**.
+Details on the GitHub Actions release pipeline and one-time Google Play setup are in the **[Deployment Guide](https://03c.github.io/WearAmp/guides/deployment/)** ([source](docs/guides/deployment.md)).
 
 ---
 
