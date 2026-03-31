@@ -70,7 +70,11 @@ class NowPlayingViewModel @Inject constructor(
                     // Restore persisted playback modes
                     viewModelScope.launch {
                         val shuffle = userPreferences.shuffleModeEnabled.first()
-                        val repeat = userPreferences.repeatMode.first()
+                        val repeat = when (userPreferences.repeatMode.first()) {
+                            Player.REPEAT_MODE_ONE -> Player.REPEAT_MODE_ONE
+                            Player.REPEAT_MODE_ALL -> Player.REPEAT_MODE_ALL
+                            else -> Player.REPEAT_MODE_OFF
+                        }
                         mediaController?.shuffleModeEnabled = shuffle
                         mediaController?.repeatMode = repeat
                     }
