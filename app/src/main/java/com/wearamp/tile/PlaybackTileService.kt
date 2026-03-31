@@ -88,11 +88,17 @@ class PlaybackTileService : TileService() {
 
         // Convert from the tiles DeviceParameters type to the protolayout type.
         val deviceParams = tileDeviceParams?.let {
+            // Map the raw Int to a known @ScreenShape constant so lint is satisfied.
+            val screenShape = when (it.screenShape) {
+                DeviceParametersBuilders.SCREEN_SHAPE_ROUND -> DeviceParametersBuilders.SCREEN_SHAPE_ROUND
+                DeviceParametersBuilders.SCREEN_SHAPE_RECT -> DeviceParametersBuilders.SCREEN_SHAPE_RECT
+                else -> DeviceParametersBuilders.SCREEN_SHAPE_UNDEFINED
+            }
             DeviceParametersBuilders.DeviceParameters.Builder()
                 .setScreenWidthDp(it.screenWidthDp)
                 .setScreenHeightDp(it.screenHeightDp)
                 .setScreenDensity(it.screenDensity)
-                .setScreenShape(it.screenShape)
+                .setScreenShape(screenShape)
                 .build()
         } ?: DeviceParametersBuilders.DeviceParameters.Builder().build()
 
