@@ -19,6 +19,7 @@ import androidx.wear.compose.material.Text
 fun LibraryScreen(
     onSectionSelected: (sectionId: String) -> Unit,
     onNowPlayingClick: () -> Unit,
+    onSettingsClick: () -> Unit,
     viewModel: LibraryViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -47,6 +48,13 @@ fun LibraryScreen(
                         colors = ChipDefaults.secondaryChipColors()
                     )
                 }
+                item {
+                    Chip(
+                        label = { Text(text = "Settings") },
+                        onClick = onSettingsClick,
+                        colors = ChipDefaults.secondaryChipColors()
+                    )
+                }
             }
         }
 
@@ -63,6 +71,13 @@ fun LibraryScreen(
                         label = { Text(text = "Retry") },
                         onClick = { viewModel.loadLibrary() },
                         colors = ChipDefaults.primaryChipColors()
+                    )
+                }
+                item {
+                    Chip(
+                        label = { Text(text = "Settings") },
+                        onClick = onSettingsClick,
+                        colors = ChipDefaults.secondaryChipColors()
                     )
                 }
             }

@@ -45,6 +45,9 @@ fun WearNavGraph(
                 },
                 onNowPlayingClick = {
                     navController.navigate(Screen.NOW_PLAYING)
+                },
+                onSettingsClick = {
+                    navController.navigate(Screen.SETTINGS)
                 }
             )
         }
