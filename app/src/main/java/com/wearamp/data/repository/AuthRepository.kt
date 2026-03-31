@@ -6,6 +6,7 @@ import com.wearamp.data.api.model.PlexPin
 import com.wearamp.data.api.model.PlexUser
 import com.wearamp.data.local.UserPreferences
 import kotlinx.coroutines.delay
+import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -66,21 +67,19 @@ class AuthRepository @Inject constructor(
             ?: resources.firstOrNull { it.provides.contains("server") }
             ?: throw Exception("No Plex servers found on this account")
 
-        val isHttps = { connection: PlexConnection ->
-            connection.uri.toHttpUrlOrNull()?.scheme.equals("https", ignoreCase = true)
-        }
-
-        val connection = server.connections
+        val connectionWithUri = server.connections
+            ?.mapNotNull { connection ->
+                val parsed = connection.uri.trim().toHttpUrlOrNull()
+                parsed?.let { connection to parsed }
+            }
             ?.sortedWith(
-                compareByDescending { it.local }
-                    .thenByDescending { isHttps(it) }
+                compareByDescending<Pair<PlexConnection, HttpUrl>> { it.first.local }
+                    .thenByDescending { it.second.scheme.equals("https", ignoreCase = true) }
             )
             ?.firstOrNull()
-            ?: throw Exception("No connections available for server '${server.name}'")
+            ?: throw Exception("No valid connections available for server '${server.name}'")
 
-        val trimmedUri = connection.uri.trim()
-        val parsedUri = trimmedUri.toHttpUrlOrNull()
-            ?: throw Exception("Invalid server URI format")
+        val (connection, parsedUri) = connectionWithUri
 
         val path = parsedUri.encodedPath
         val uri = parsedUri.newBuilder()
