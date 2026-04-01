@@ -26,6 +26,7 @@ import androidx.wear.compose.material.dialog.Dialog
 @Composable
 fun SettingsScreen(
     onLogout: () -> Unit,
+    onFindServersClick: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val username by viewModel.username.collectAsState()
@@ -101,6 +102,15 @@ fun SettingsScreen(
                     showServerUrlDialog = true
                 },
                 colors = ChipDefaults.primaryChipColors()
+            )
+        }
+
+        item {
+            Chip(
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(text = "Find Servers") },
+                onClick = onFindServersClick,
+                colors = ChipDefaults.secondaryChipColors()
             )
         }
 

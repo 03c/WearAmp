@@ -15,6 +15,7 @@ import com.wearamp.presentation.screens.library.LibraryScreen
 import com.wearamp.presentation.screens.login.LoginScreen
 import com.wearamp.presentation.screens.player.NowPlayingScreen
 import com.wearamp.presentation.screens.queue.QueueScreen
+import com.wearamp.presentation.screens.settings.ServerPickerScreen
 import com.wearamp.presentation.screens.settings.SettingsScreen
 
 @Composable
@@ -112,7 +113,16 @@ fun WearNavGraph(
                     navController.navigate(Screen.LOGIN) {
                         popUpTo(0) { inclusive = true }
                     }
+                },
+                onFindServersClick = {
+                    navController.navigate(Screen.SERVER_PICKER)
                 }
+            )
+        }
+
+        composable(Screen.SERVER_PICKER) {
+            ServerPickerScreen(
+                onServerSelected = { navController.popBackStack() }
             )
         }
     }
