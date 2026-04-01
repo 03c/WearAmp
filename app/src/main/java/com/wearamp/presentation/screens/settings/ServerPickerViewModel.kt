@@ -51,9 +51,17 @@ class ServerPickerViewModel @Inject constructor(
         }
     }
 
+    private val _serverSaved = MutableStateFlow(false)
+    val serverSaved: StateFlow<Boolean> = _serverSaved.asStateFlow()
+
     fun selectConnection(resource: PlexResource, connection: PlexConnection) {
         viewModelScope.launch {
-            authRepository.saveServerConnection(resource, connection)
+            try {
+                authRepository.saveServerConnection(resource, connection)
+                _serverSaved.value = true
+            } catch (_: Exception) {
+                _uiState.value = ServerPickerUiState.Error("Failed to save server")
+            }
         }
     }
 
