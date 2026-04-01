@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -29,6 +30,11 @@ fun ServerPickerScreen(
     viewModel: ServerPickerViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val serverSaved by viewModel.serverSaved.collectAsState()
+
+    LaunchedEffect(serverSaved) {
+        if (serverSaved) onServerSelected()
+    }
 
     when (val state = uiState) {
         is ServerPickerUiState.Loading -> {
@@ -67,7 +73,6 @@ fun ServerPickerScreen(
                 servers = state.servers,
                 onConnectionSelected = { resource, connection ->
                     viewModel.selectConnection(resource, connection)
-                    onServerSelected()
                 }
             )
         }
@@ -80,14 +85,14 @@ private fun ServerList(
     onConnectionSelected: (PlexResource, PlexConnection) -> Unit
 ) {
     ScalingLazyColumn(modifier = Modifier.fillMaxSize()) {
-        item {
+        item(key = "header") {
             ListHeader { Text(text = "Select Server") }
         }
 
         for (server in servers) {
             val connections = server.connections ?: continue
 
-            item {
+            item(key = "server-${server.name}") {
                 ListHeader {
                     Text(
                         text = server.name,
@@ -96,7 +101,10 @@ private fun ServerList(
                 }
             }
 
-            items(connections) { connection ->
+            items(
+                items = connections,
+                key = { "${server.name}-${it.uri}" }
+            ) { connection ->
                 val label = if (connection.local) "Local" else "Remote"
                 Chip(
                     modifier = Modifier.fillMaxWidth(),
