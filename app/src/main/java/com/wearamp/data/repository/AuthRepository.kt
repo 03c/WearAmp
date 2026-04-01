@@ -1,7 +1,9 @@
 package com.wearamp.data.repository
 
 import com.wearamp.data.api.PlexAuthApi
+import com.wearamp.data.api.model.PlexConnection
 import com.wearamp.data.api.model.PlexPin
+import com.wearamp.data.api.model.PlexResource
 import com.wearamp.data.api.model.PlexUser
 import com.wearamp.data.local.UserPreferences
 import kotlinx.coroutines.delay
@@ -62,6 +64,15 @@ class AuthRepository @Inject constructor(
     }
 
     /**
+     * Fetch all Plex Media Servers visible to the authenticated user.
+     * Returns only resources whose [PlexResource.provides] field contains "server".
+     */
+    suspend fun getServers(authToken: String, clientId: String): Result<List<PlexResource>> = runCatching {
+        plexAuthApi.getResources(authToken, clientId)
+            .filter { it.provides?.contains("server") == true }
+    }
+
+    /**
      * Discover the user's Plex Media Server via the plex.tv resources endpoint
      * and save the best connection URL.
      *
@@ -88,6 +99,14 @@ class AuthRepository @Inject constructor(
         server.accessToken?.let { userPreferences.saveServerToken(it) }
 
         serverUrl
+    }
+
+    /**
+     * Save a manually-selected server connection URL and its resource access token.
+     */
+    suspend fun saveServerConnection(resource: PlexResource, connection: PlexConnection) {
+        userPreferences.saveServerUrl(connection.uri.trimEnd('/'))
+        resource.accessToken?.let { userPreferences.saveServerToken(it) }
     }
 
     suspend fun logout() {
