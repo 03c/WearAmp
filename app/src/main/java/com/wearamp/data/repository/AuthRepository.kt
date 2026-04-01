@@ -106,7 +106,8 @@ class AuthRepository @Inject constructor(
      */
     suspend fun saveServerConnection(resource: PlexResource, connection: PlexConnection) {
         userPreferences.saveServerUrl(connection.uri.trimEnd('/'))
-        resource.accessToken?.let { userPreferences.saveServerToken(it) }
+        val serverToken = resource.accessToken ?: ""
+        userPreferences.saveServerToken(serverToken)
     }
 
     suspend fun logout() {
