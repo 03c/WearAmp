@@ -66,6 +66,8 @@ class SettingsViewModel @Inject constructor(
         _serverUrlError.value = null
         viewModelScope.launch {
             userPreferences.saveServerUrl(normalised)
+            // Server changed – cached data from the previous server is no longer valid.
+            mediaRepository.clearLibraryCache()
         }
         return true
     }
@@ -111,6 +113,7 @@ class SettingsViewModel @Inject constructor(
 
     fun logout(onComplete: () -> Unit) {
         viewModelScope.launch {
+            mediaRepository.clearLibraryCache()
             authRepository.logout()
             onComplete()
         }

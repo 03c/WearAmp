@@ -1,5 +1,6 @@
 package com.wearamp.data.repository
 
+import android.os.SystemClock
 import com.wearamp.data.api.PlexMediaApi
 import com.wearamp.data.api.model.PlexLibrarySection
 import com.wearamp.data.api.model.PlexMetadata
@@ -16,15 +17,20 @@ class MediaRepository @Inject constructor(
     private val userPreferences: UserPreferences
 ) {
 
-    private data class CacheEntry<T>(val data: T, val fetchedAt: Long = System.currentTimeMillis())
+    /** Stores data alongside the monotonic elapsed-realtime at which it was fetched. */
+    private data class CacheEntry<T>(val data: T, val fetchedAtMs: Long = SystemClock.elapsedRealtime())
 
+    // Cache keyed by "$serverUrl:$sectionId" to prevent cross-server/account contamination.
     private val artistsCache = ConcurrentHashMap<String, CacheEntry<List<PlexMetadata>>>()
     private val allAlbumsCache = ConcurrentHashMap<String, CacheEntry<List<PlexMetadata>>>()
 
     private val cacheTtlMs = 60 * 60 * 1000L // 1 hour
 
     private fun <T> CacheEntry<T>.isValid(): Boolean =
-        (System.currentTimeMillis() - fetchedAt) < cacheTtlMs
+        (SystemClock.elapsedRealtime() - fetchedAtMs) < cacheTtlMs
+
+    /** Returns the composite cache key combining [serverUrl] and [sectionId]. */
+    private suspend fun cacheKey(sectionId: String): String = "${serverUrl()}:$sectionId"
 
     /** Removes all cached artists and albums so the next fetch goes to the network. */
     fun clearLibraryCache() {
@@ -33,21 +39,24 @@ class MediaRepository @Inject constructor(
     }
 
     /**
-     * Clears the cache for [sectionId], then eagerly re-fetches both artists and all albums from
-     * the Plex server and repopulates the cache.  Returns [Result.success] on completion or
-     * [Result.failure] if either network call fails.
+     * Clears the cache for [sectionId] on the current server, then eagerly re-fetches both
+     * artists and all albums from the Plex server and repopulates the cache.
+     * Returns [Result.success] on completion or [Result.failure] if either network call fails.
      */
     suspend fun refreshLibraryCache(sectionId: String): Result<Unit> {
-        artistsCache.remove(sectionId)
-        allAlbumsCache.remove(sectionId)
+        val key = cacheKey(sectionId)
+        artistsCache.remove(key)
+        allAlbumsCache.remove(key)
         return apiCall {
-            // Fetch both before updating cache; if either call throws, neither cache entry is written.
-            val artists = plexMediaApi.getArtists(sectionId, token())
+            // Read token once and fetch both lists before writing to cache;
+            // if either call throws, neither cache entry is written.
+            val authToken = token()
+            val artists = plexMediaApi.getArtists(sectionId, authToken)
                 .mediaContainer.items ?: emptyList()
-            val albums = plexMediaApi.getAllAlbums(sectionId, token())
+            val albums = plexMediaApi.getAllAlbums(sectionId, authToken)
                 .mediaContainer.items ?: emptyList()
-            artistsCache[sectionId] = CacheEntry(artists)
-            allAlbumsCache[sectionId] = CacheEntry(albums)
+            artistsCache[key] = CacheEntry(artists)
+            allAlbumsCache[key] = CacheEntry(albums)
         }
     }
 
@@ -80,14 +89,18 @@ class MediaRepository @Inject constructor(
     }
 
     suspend fun getArtists(sectionId: String): Result<List<PlexMetadata>> {
-        artistsCache[sectionId]?.let { cached ->
+        val key = cacheKey(sectionId)
+        val cached = artistsCache[key]
+        if (cached != null) {
             if (cached.isValid()) return Result.success(cached.data)
+            // Evict the stale entry before fetching fresh data.
+            artistsCache.remove(key)
         }
         return apiCall {
             plexMediaApi.getArtists(sectionId, token())
                 .mediaContainer.items ?: emptyList()
         }.also { result ->
-            result.onSuccess { artistsCache[sectionId] = CacheEntry(it) }
+            result.onSuccess { artistsCache[key] = CacheEntry(it) }
         }
     }
 
@@ -99,14 +112,18 @@ class MediaRepository @Inject constructor(
     }
 
     suspend fun getAllAlbumsInSection(sectionId: String): Result<List<PlexMetadata>> {
-        allAlbumsCache[sectionId]?.let { cached ->
+        val key = cacheKey(sectionId)
+        val cached = allAlbumsCache[key]
+        if (cached != null) {
             if (cached.isValid()) return Result.success(cached.data)
+            // Evict the stale entry before fetching fresh data.
+            allAlbumsCache.remove(key)
         }
         return apiCall {
             plexMediaApi.getAllAlbums(sectionId, token())
                 .mediaContainer.items ?: emptyList()
         }.also { result ->
-            result.onSuccess { allAlbumsCache[sectionId] = CacheEntry(it) }
+            result.onSuccess { allAlbumsCache[key] = CacheEntry(it) }
         }
     }
 

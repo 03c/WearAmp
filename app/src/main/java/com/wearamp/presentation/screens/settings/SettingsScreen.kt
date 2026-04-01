@@ -161,10 +161,10 @@ fun SettingsScreen(
                 label = {
                     Text(text = if (isRefreshing) "Refreshing…" else "Refresh Plex Library")
                 },
-                icon = {
-                    if (isRefreshing) {
-                        CircularProgressIndicator(modifier = Modifier.size(16.dp))
-                    }
+                icon = if (isRefreshing) {
+                    { CircularProgressIndicator(modifier = Modifier.size(16.dp)) }
+                } else {
+                    null
                 },
                 onClick = { viewModel.refreshLibraryCache() },
                 enabled = !isRefreshing,
