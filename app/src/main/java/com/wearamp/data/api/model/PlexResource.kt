@@ -8,6 +8,7 @@ import com.google.gson.annotations.SerializedName
  */
 data class PlexResource(
     @SerializedName("name") val name: String,
+    @SerializedName("clientIdentifier") val clientIdentifier: String,
     @SerializedName("product") val product: String?,
     @SerializedName("provides") val provides: String?,
     @SerializedName("accessToken") val accessToken: String?,

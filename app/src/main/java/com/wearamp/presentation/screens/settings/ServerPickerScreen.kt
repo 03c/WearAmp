@@ -92,7 +92,7 @@ private fun ServerList(
         for (server in servers) {
             val connections = server.connections ?: continue
 
-            item(key = "server-${server.name}") {
+            item(key = "server-${server.clientIdentifier}") {
                 ListHeader {
                     Text(
                         text = server.name,
@@ -103,7 +103,7 @@ private fun ServerList(
 
             items(
                 items = connections,
-                key = { "${server.name}-${it.uri}" }
+                key = { "${server.clientIdentifier}-${it.uri}" }
             ) { connection ->
                 val label = if (connection.local) "Local" else "Remote"
                 Chip(
