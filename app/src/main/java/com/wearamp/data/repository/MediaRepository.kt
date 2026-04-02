@@ -148,6 +148,13 @@ class MediaRepository @Inject constructor(
             ?: emptyList()
     }
 
+    suspend fun getRecentlyPlayed(): Result<List<PlexMetadata>> = apiCall {
+        plexMediaApi.getRecentlyPlayed(token())
+            .mediaContainer
+            .items
+            ?: emptyList()
+    }
+
     suspend fun rateTrack(ratingKey: String, starred: Boolean): Result<Unit> = apiCall {
         plexMediaApi.rateTrack(
             ratingKey = ratingKey,

@@ -55,6 +55,9 @@ fun WearNavGraph(
                 onAlbumsClick = { sectionId ->
                     navController.navigate(Screen.browseAllAlbums(sectionId))
                 },
+                onRecentAlbumClick = { albumId ->
+                    navController.navigate(Screen.browseTracks(albumId))
+                },
                 onNowPlayingClick = {
                     navController.navigate(Screen.NOW_PLAYING)
                 },
