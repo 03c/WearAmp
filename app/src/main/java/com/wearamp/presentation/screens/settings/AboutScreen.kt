@@ -35,7 +35,7 @@ fun AboutScreen() {
             Text(
                 text = "Version ${BuildConfig.VERSION_NAME}",
                 style = MaterialTheme.typography.body2,
-                color = MaterialTheme.colors.onSurfaceVariant,
+                color = MaterialTheme.colors.onSurface,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -66,9 +66,9 @@ fun AboutScreen() {
 
         item {
             Text(
-                text = "Open source – MIT License",
+                text = "Open source – GPL-3.0",
                 style = MaterialTheme.typography.caption2,
-                color = MaterialTheme.colors.onSurfaceVariant,
+                color = MaterialTheme.colors.onSurface,
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .fillMaxWidth()
