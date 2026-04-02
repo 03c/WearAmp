@@ -35,7 +35,9 @@ data class PlexMetadata(
     @SerializedName("year") val year: Int?,
     @SerializedName("duration") val duration: Long?,
     @SerializedName("userRating") val userRating: Float?,
+    @SerializedName("parentRatingKey") val parentRatingKey: String?,
     @SerializedName("parentTitle") val parentTitle: String?,
+    @SerializedName("grandparentRatingKey") val grandparentRatingKey: String?,
     @SerializedName("grandparentTitle") val grandparentTitle: String?,
     @SerializedName("Media") val media: List<PlexMedia>?
 )

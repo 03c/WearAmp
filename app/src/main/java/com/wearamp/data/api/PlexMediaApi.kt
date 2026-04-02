@@ -62,6 +62,16 @@ interface PlexMediaApi {
         @Query("limit") limit: Int = 20
     ): PlexMediaContainer<PlexMusicContainer>
 
+    /** Recently played tracks from the server's play history. */
+    @GET("status/sessions/history/all")
+    suspend fun getRecentlyPlayed(
+        @Header("X-Plex-Token") token: String,
+        @Query("type") type: Int = 10,
+        @Query("sort") sort: String = "viewedAt:desc",
+        @Query("X-Plex-Container-Start") start: Int = 0,
+        @Query("X-Plex-Container-Size") limit: Int = 20
+    ): PlexMediaContainer<PlexMusicContainer>
+
     /**
      * Rate a track. Set rating to 10 to star/like, 0 to unrate.
      */
