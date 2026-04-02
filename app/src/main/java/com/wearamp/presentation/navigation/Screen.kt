@@ -11,6 +11,7 @@ object Screen {
     const val QUEUE = "queue"
     const val SETTINGS = "settings"
     const val SERVER_PICKER = "server_picker"
+    const val ABOUT = "about"
 
     fun browseArtists(sectionId: String) = "browse_artists/$sectionId"
     fun browseAllAlbums(sectionId: String) = "browse_all_albums/$sectionId"

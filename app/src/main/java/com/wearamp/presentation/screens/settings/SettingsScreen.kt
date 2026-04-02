@@ -31,6 +31,7 @@ import androidx.wear.compose.material.dialog.Dialog
 fun SettingsScreen(
     onLogout: () -> Unit,
     onFindServersClick: () -> Unit,
+    onAboutClick: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val username by viewModel.username.collectAsState()
@@ -168,6 +169,15 @@ fun SettingsScreen(
                 },
                 onClick = { viewModel.refreshLibraryCache() },
                 enabled = !isRefreshing,
+                colors = ChipDefaults.secondaryChipColors()
+            )
+        }
+
+        item {
+            Chip(
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(text = "About") },
+                onClick = onAboutClick,
                 colors = ChipDefaults.secondaryChipColors()
             )
         }
